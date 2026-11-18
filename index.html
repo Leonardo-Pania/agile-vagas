@@ -209,6 +209,7 @@ const AJUSTES = {
   TITULO_APP: 'Agile Consultoria',
   CABECALHO_MSG: '📢 OPORTUNIDADE DE EMPREGO!',
   CHAMADA_MSG: 'Interessados podem conferir os requisitos e realizar a candidatura diretamente pelo link:',
+  RODAPE_MSG: 'Compartilhe com quem possa ter interesse! 🤝\n\nAGILE | Vagas e Conexões',
   // Arte (cores da Agile)
   COR_FUNDO: '#3d0716',
   COR_FUNDO_2: '#7a1334',
@@ -354,6 +355,7 @@ function aplicarAjustes(aj) {
   estado.ajustesServidor = aj;
   AJUSTES.CABECALHO_MSG = aj.msgCabecalho || PADRAO.CABECALHO_MSG;
   AJUSTES.CHAMADA_MSG = aj.msgChamada || PADRAO.CHAMADA_MSG;
+  AJUSTES.RODAPE_MSG = aj.msgRodape || PADRAO.RODAPE_MSG;
   AJUSTES.SELO_ARTE = aj.arteSelo || PADRAO.SELO_ARTE;
   AJUSTES.CHAMADA_ARTE = aj.arteChamada || PADRAO.CHAMADA_ARTE;
 }
@@ -368,6 +370,8 @@ function aplicarResposta(r) {
   estado.descartadas = r.descartadas || [];
   estado.ultimaBusca = r.ultimaBusca || 0;
   estado.linkedinLimitou = !!r.linkedinLimitou;
+  estado.aguardando = r.aguardando || 0;
+  estado.agenda = r.agenda || '';
 }
 
 async function carregarFila() {
@@ -388,7 +392,7 @@ async function buscar() {
     const r = await chamar('buscar');
     aplicarResposta(r);
     const partes = [];
-    partes.push(r.vagasNovas === 1 ? '1 vaga nova nos e-mails' : (r.vagasNovas || 0) + ' vagas novas nos e-mails');
+    partes.push(r.vagasNovas === 1 ? '1 vaga nova' : (r.vagasNovas || 0) + ' vagas novas');
     partes.push((r.descartadas || []).length + ' descartada(s)');
     partes.push(estado.vagas.length + ' pronta(s) para enviar');
     estado.resumoBusca = partes.join(' · ');
@@ -405,14 +409,21 @@ function linhaDetalhes(v) {
   return partes.join(' | ');
 }
 
+const comPonto = (t) => { t = String(t || '').trim().replace(/[;,]+$/, ''); return /[.!?]$/.test(t) ? t : t + '.'; };
+
+// Padrão da cliente:
+// 📢 OPORTUNIDADE DE EMPREGO! / cargo / 📍 cidade, ⏰ jornada, Empresa / 🎁 Benefícios / chamada / 🔗 link / rodapé
 function montarMensagem(v) {
-  const l = [AJUSTES.CABECALHO_MSG];
-  if (v.local) l.push('', '📍 ' + v.local);
-  l.push('', v.titulo || '(cargo)');
-  if (v.empresa) l.push('', 'Empresa: ' + v.empresa);
-  const det = linhaDetalhes(v);
-  if (det) l.push('', '🖥️ ' + det + '.');
+  const l = [AJUSTES.CABECALHO_MSG, '', v.titulo || '(cargo)'];
+  const bloco = [];
+  if (v.local) bloco.push('📍 ' + v.local);
+  if (v.jornada) bloco.push('⏰ ' + comPonto(v.jornada));
+  if (v.empresa) bloco.push('Empresa: ' + v.empresa);
+  if (bloco.length) l.push('', ...bloco);
+  const ben = String(v.beneficios || '').trim();
+  if (ben) l.push('', '🎁 Benefícios: ' + comPonto(ben.charAt(0).toUpperCase() + ben.slice(1)));
   l.push('', AJUSTES.CHAMADA_MSG, '', '🔗 ' + (v.linkCandidatura || v.link));
+  if (AJUSTES.RODAPE_MSG.trim()) l.push('', AJUSTES.RODAPE_MSG.trim());
   return l.join('\n');
 }
 
@@ -741,7 +752,7 @@ function aviso(texto, rotuloAcao, acao) {
 function esconderAviso() { $('toast').classList.remove('visivel'); }
 
 // ------------------------- Edição -------------------------
-const CAMPOS = ['titulo', 'empresa', 'local', 'modalidade', 'jornada', 'linkCandidatura'];
+const CAMPOS = ['titulo', 'empresa', 'local', 'modalidade', 'jornada', 'beneficios', 'linkCandidatura'];
 let tempoEdicao = null;
 function editar(id, campo, valor) {
   const v = estado.vagas.find((x) => x.id === id);
@@ -804,6 +815,9 @@ function htmlCartao(v, i) {
       </div>
       <div class="campo"><label for="f-jornada-${v.id}">Jornada</label>
         <input id="f-jornada-${v.id}" data-campo="jornada" data-id="${v.id}" value="${esc(v.jornada)}" list="jornadas" placeholder="Tempo integral"></div>
+      <div class="campo"><label for="f-beneficios-${v.id}">Benefícios</label>
+        <textarea id="f-beneficios-${v.id}" data-campo="beneficios" data-id="${v.id}" rows="3" placeholder="Ex.: Vale-alimentação, PLR e assistência médica">${esc(v.beneficios || '')}</textarea>
+        <div class="dica">O app resume os benefícios do anúncio. Confira e ajuste se quiser. Vazio = a linha 🎁 não aparece.</div></div>
       <div class="campo"><label for="f-link-${v.id}">Link de candidatura</label>
         <input id="f-link-${v.id}" data-campo="linkCandidatura" data-id="${v.id}" value="${esc(v.linkCandidatura || '')}" placeholder="${esc(v.link)}" inputmode="url">
         <div class="dica">Vazio = link da vaga no LinkedIn. Se tiver o link do site da empresa, cole aqui.</div></div>
@@ -846,7 +860,7 @@ function desenhar() {
   $('subtitulo').textContent = quando(estado.ultimaBusca);
   $('btnBuscar').disabled = estado.carregando;
   $('btnBuscar').innerHTML = estado.carregando
-    ? '<span class="girando"></span> Lendo e-mails e conferindo vagas…'
+    ? '<span class="girando"></span> Procurando e conferindo vagas…'
     : 'Buscar vagas novas';
 
   let html = '';
@@ -857,6 +871,9 @@ function desenhar() {
     html += '<div class="faixa alerta">O LinkedIn limitou as consultas agora. As vagas com ⚠ não foram conferidas: abra o link antes de enviar, ou busque de novo mais tarde.</div>';
   }
 
+  if (estado.aguardando && !estado.carregando) {
+    html += `<div class="faixa info">${estado.aguardando === 1 ? '1 vaga nova ainda está' : estado.aguardando + ' vagas novas ainda estão'} sendo conferida(s) no LinkedIn e aparece(m) na próxima busca.</div>`;
+  }
   const visiveis = vagasVisiveis();
   if (estado.vagas.length) {
     const filtrada = visiveis.length !== estado.vagas.length;
@@ -864,7 +881,9 @@ function desenhar() {
     html += htmlFiltros();
     html += visiveis.map(htmlCartao).join('');
   } else if (!estado.carregando) {
-    html += `<div class="vazio"><strong>Nenhuma vaga esperando</strong>Toque em "Buscar vagas novas" para ler os alertas do LinkedIn.</div>`;
+    html += `<div class="vazio"><strong>Nenhuma vaga esperando</strong>${estado.agenda
+      ? 'O app busca vagas sozinho todo dia por volta de ' + esc(estado.agenda) + '. Se quiser, toque em "Buscar vagas novas".'
+      : 'Toque em "Buscar vagas novas" para procurar no LinkedIn.'}</div>`;
   }
 
   if (estado.descartadas.length) {
@@ -935,7 +954,7 @@ function ajustesAtuais() {
   return {
     cidades: (a.cidades && a.cidades.length ? a.cidades : CIDADES_PADRAO).slice(),
     maxDias: a.maxDias || 15,
-    msgCabecalho: a.msgCabecalho || '', msgChamada: a.msgChamada || '',
+    msgCabecalho: a.msgCabecalho || '', msgChamada: a.msgChamada || '', msgRodape: a.msgRodape || '',
     arteSelo: a.arteSelo || '', arteChamada: a.arteChamada || '',
   };
 }
@@ -980,7 +999,9 @@ function telaConfiguracoes(main) {
       <div class="campo"><label for="cfgMsgCab">Primeira linha</label>
         <input id="cfgMsgCab" data-rascunho="msgCabecalho" value="${esc(r.msgCabecalho)}" placeholder="${esc(PADRAO.CABECALHO_MSG)}"></div>
       <div class="campo"><label for="cfgMsgCham">Texto antes do link</label>
-        <textarea id="cfgMsgCham" data-rascunho="msgChamada" placeholder="${esc(PADRAO.CHAMADA_MSG)}">${esc(r.msgChamada)}</textarea>
+        <textarea id="cfgMsgCham" data-rascunho="msgChamada" placeholder="${esc(PADRAO.CHAMADA_MSG)}">${esc(r.msgChamada)}</textarea></div>
+      <div class="campo"><label for="cfgMsgRod">Final da mensagem</label>
+        <textarea id="cfgMsgRod" data-rascunho="msgRodape" rows="3" placeholder="${esc(PADRAO.RODAPE_MSG)}">${esc(r.msgRodape)}</textarea>
         <div class="dica">Deixe em branco para usar o texto padrão (o que aparece clarinho).</div></div>
 
       <h3>Arte</h3>
@@ -1102,7 +1123,7 @@ const demo = {
   },
   inicial() {
     return [
-      { id: '4479099544', titulo: 'Supervisor(a) Administrativo-Financeiro (a)', empresa: 'Oxi-Maq Comercial e Industrial de Equipamentos', empresaOriginal: 'Oxi-Maq Comercial e Industrial de Equipamentos', local: 'Araraquara/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 2 dias', link: 'https://www.linkedin.com/jobs/view/4479099544/', conferida: true, aviso: '', logo: demo.logo('OXI', '#e31b23') },
+      { id: '4479099544', titulo: 'Supervisor(a) Administrativo-Financeiro (a)', empresa: 'Oxi-Maq Comercial e Industrial de Equipamentos', empresaOriginal: 'Oxi-Maq Comercial e Industrial de Equipamentos', local: 'Araraquara/SP', modalidade: 'presencial', jornada: 'Tempo integral', beneficios: 'Vale-alimentação, auxílio combustível, PLR, assistência médica e odontológica, TotalPass, Day Off de aniversário e refeitório', publicada: 'Há 2 dias', link: 'https://www.linkedin.com/jobs/view/4479099544/', conferida: true, aviso: '', logo: demo.logo('OXI', '#e31b23') },
       { id: '4389848415', titulo: 'Executivo de Vendas Pl.', empresa: 'PagBank', empresaOriginal: 'PagBank', local: 'Matão/SP', modalidade: '', jornada: 'Tempo integral', publicada: 'Há 5 dias', link: 'https://www.linkedin.com/jobs/view/4389848415/', conferida: true, aviso: '', logo: demo.logo('PB', '#16a34a') },
       { id: '4488196470', titulo: 'Operador(a) de Loja/Repositor - Parque Faber', empresa: 'GPA', empresaOriginal: 'GPA', local: 'São Carlos/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 1 dia', link: 'https://www.linkedin.com/jobs/view/4488196470/', conferida: true, aviso: '', logo: demo.logo('GPA', '#0b4ea2') },
       { id: '4400000201', titulo: 'Analista de Sistemas', empresa: 'Jobbol', empresaOriginal: 'Jobbol', local: 'Araraquara/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 3 dias', link: 'https://www.linkedin.com/jobs/view/4400000201/', conferida: true, aviso: '', logo: demo.logo('J', '#2563eb') },
@@ -1110,7 +1131,7 @@ const demo = {
       { id: '4400000004', titulo: 'Auxiliar de Logística', empresa: 'Transportadora Exemplo', empresaOriginal: 'Transportadora Exemplo', local: 'Taquaritinga/SP', modalidade: '', jornada: '', publicada: '', link: 'https://www.linkedin.com/jobs/view/4400000004/', conferida: false, aviso: 'Não deu para conferir no LinkedIn agora. Abra o link antes de enviar.', logo: '' },
     ];
   },
-  ajustes: { cidades: ['Matão', 'Araraquara', 'São Carlos', 'Taquaritinga'], maxDias: 15, msgCabecalho: '', msgChamada: '', arteSelo: '', arteChamada: '' },
+  ajustes: { cidades: ['Matão', 'Araraquara', 'São Carlos', 'Taquaritinga'], maxDias: 15, msgCabecalho: '', msgChamada: '', msgRodape: '', arteSelo: '', arteChamada: '' },
   async chamar(acao, p) {
     await new Promise((r) => setTimeout(r, acao === 'buscar' ? 1200 : 150));
     if (acao === 'ajustes') return { ok: true, ajustes: demo.ajustes };
@@ -1124,7 +1145,7 @@ const demo = {
     ];
     if (acao === 'buscar') demo.buscou = Date.now();
     return { ok: true, pendentes: demo.fila.slice(), descartadas: demo.buscou ? descartadas : [],
-      ultimaBusca: demo.buscou || 0, linkedinLimitou: !!demo.buscou, vagasNovas: 7, ajustes: demo.ajustes };
+      ultimaBusca: demo.buscou || 0, linkedinLimitou: !!demo.buscou, vagasNovas: 7, agenda: '11:30 e 17:00', ajustes: demo.ajustes };
   },
 };
 
