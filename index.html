@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#4a0a1f">
+<meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
 <link rel="apple-touch-icon" href="icone-192.png">
@@ -112,9 +112,12 @@
   .toast.visivel { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
   .toast button { background: none; border: 0; color: var(--destaque); font-weight: 700; padding: 4px; }
 
-  .abertura { position: fixed; inset: 0; background: #000; display: grid; place-items: center; z-index: 100;
-    transition: opacity .5s ease; }
-  .abertura .logo-brilho { position: relative; width: min(74vw, 380px); isolation: isolate; line-height: 0; }
+  /* Abertura (5 s): 0–2 s a logo surge do preto; 2–5 s o brilho passa e a barra enche */
+  .abertura { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; transition: opacity .5s ease; }
+  .abertura .logo-brilho { position: relative; width: min(74vw, 380px); isolation: isolate; line-height: 0;
+    animation: surgir 2s ease-in-out both; }
+  @keyframes surgir { from { opacity: 0; } to { opacity: 1; } }
   .abertura img { width: 100%; height: auto; display: block; }
   /* brilho que passa da esquerda para a direita, só sobre a logo (o fundo preto continua preto) */
   .abertura .logo-brilho::after { content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -122,9 +125,22 @@
     background-size: 250% 100%; background-position: 100% 0;
     /* a própria logo serve de máscara: o brilho só aparece no dourado */
     mask-image: var(--logo-mascara); mask-mode: luminance; mask-size: 100% 100%; mask-repeat: no-repeat;
-    animation: brilho 1.4s ease-in-out .25s 1 both; }
+    animation: brilho 1.5s ease-in-out 2s 2 both; }
   @keyframes brilho { from { background-position: 100% 0; } to { background-position: 0% 0; } }
-  @media (prefers-reduced-motion: reduce) { .abertura .logo-brilho::after { animation: none; opacity: 0; } }
+  .abertura .carregando { width: min(56vw, 270px); margin-top: 30px; text-align: center; animation: aparecer .5s ease-out 2s both; }
+  @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .abertura .bem-vindo { color: #ead39a; font-size: 14px; font-weight: 600; letter-spacing: .34em; text-transform: uppercase;
+    padding-left: .34em; margin-bottom: 14px; }
+  .abertura .barra { height: 4px; border-radius: 4px; background: rgba(226,182,90,.16); overflow: hidden; }
+  .abertura .barra i { display: block; width: 100%; height: 100%; border-radius: inherit; transform-origin: left center;
+    background: linear-gradient(90deg, #9c6f22, #e2b65a 55%, #fff1c4); box-shadow: 0 0 12px rgba(243,212,138,.55);
+    animation: encher 3s cubic-bezier(.45,.05,.35,1) 2s both; }
+  @keyframes encher { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .abertura .logo-brilho, .abertura .carregando { animation: none; }
+    .abertura .logo-brilho::after { animation: none; opacity: 0; }
+    .abertura .barra i { animation: none; transform: none; }
+  }
   .abertura.saindo { opacity: 0; pointer-events: none; }
   .config { background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 18px; margin-top: 18px; }
   .config h2 { margin: 0 0 6px; font-size: 19px; }
@@ -144,6 +160,12 @@
   .linha-dias { display: flex; align-items: center; gap: 10px; }
   .linha-dias input { width: 90px !important; text-align: center; }
   .config img.previa-cfg { width: 62%; display: block; margin: 12px auto 0; border-radius: 12px; aspect-ratio: 4 / 5; background: #eadde2; }
+  .filtros { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; margin: 0 -2px; scrollbar-width: none; }
+  .filtros::-webkit-scrollbar { display: none; }
+  .filtro { flex: none; border: 1px solid var(--borda); background: #fff; color: var(--texto); border-radius: 999px;
+    padding: 8px 13px; font-size: 14px; font-weight: 600; min-height: 38px; }
+  .filtro.ativo { background: var(--marca); border-color: var(--marca); color: #fff; }
+  .filtro .n { opacity: .75; margin-left: 4px; font-weight: 500; }
   .config details { margin-top: 20px; border-top: 1px solid var(--borda); padding-top: 12px; }
   .config details summary { color: var(--suave); font-weight: 650; cursor: pointer; padding: 6px 0; }
   .credito { text-align: center; color: var(--suave); font-size: 12.5px; margin: 22px 0 4px; letter-spacing: .3px; }
@@ -151,7 +173,7 @@
 </head>
 <body>
 
-<div class="abertura" id="abertura" aria-hidden="true"><div class="logo-brilho"><img id="logoAbertura" alt="Pania Company"></div></div>
+<div class="abertura" id="abertura" aria-hidden="true"><div class="logo-brilho"><img id="logoAbertura" alt="Pania Company"></div><div class="carregando"><div class="bem-vindo">Bem-vindo</div><div class="barra"><i></i></div></div></div>
 
 <header class="topo">
   <div class="pagina">
@@ -197,7 +219,7 @@ const AJUSTES = {
   COR_EMPRESA: '#f3d48a',
   SELO_ARTE: 'VAGA ABERTA',
   CHAMADA_ARTE: 'Acesse o link e candidate-se!',
-  TEMPO_ABERTURA_MS: 2300,      // tela da Pania Company ao abrir (o brilho passa uma vez)
+  TEMPO_ABERTURA_MS: 5000,      // abertura da Pania Company: 2 s surgindo + 3 s brilho e barra
 };
 // =================================================================
 
@@ -234,7 +256,46 @@ const estado = {
   telaConfig: false,
   ajustesServidor: null,  // cidades, dias e textos salvos no servidor
   rascunho: null,         // edição em andamento na tela de Configurações
+  filtroArea: armazenamento.ler('vagas_filtro_area', 'todas'),
 };
+
+// ------------------------- Áreas (filtro da lista) -------------------------
+const AREAS = [   // ordem = prioridade na hora de classificar pelo título
+  { id: 'aprendiz', nome: 'Aprendiz/Estágio', re: /aprendiz|estagi|trainee/ },
+  { id: 'ti', nome: 'TI', re: /desenvolvedor|developer|programador|software|sistemas|devops|front.?end|back.?end|full.?stack|\bdados\b|\bdata\b|cloud|infraestrutura|\bredes\b|suporte tecnico|help.?desk|\bti\b|\bit\b|informatica|tecnologia da informacao|react|angular|javascript|\bjava\b|python|\.net|\bsap\b|\bqa\b|\bux\b|\bui\b|\bweb\b/ },
+  { id: 'saude', nome: 'Saúde', re: /enferm|\bmedic[oa]s?\b|medicina|farmac|saude|dentist|odonto|fisioterap|nutricion|psicolog|cuidador|hospital|clinic|biomedic|radiolog|veterinar/ },
+  { id: 'logistica', nome: 'Logística', re: /logistic|motorista|entregador|estoqu|almoxarif|armazem|expedicao|empilhadeir|conferente|transport|frota|separador|\bcarga/ },
+  { id: 'servicos', nome: 'Serviços gerais', re: /servicos gerais|limpeza|zelador|porteiro|portaria|vigia|vigilante|seguranca patrimonial|jardineir|copeir|faxin|camareir|manobrista|lavador/ },
+  { id: 'vendas', nome: 'Vendas', re: /vend|comercial|consultor|atend|promotor|caixa|loja|repositor|balconista|telemarketing|\bsac\b|representante|executivo de|varejo|recepcion|garcom|garcon|cozinh|chapeiro|barista|marketing/ },
+  { id: 'producao', nome: 'Produção', re: /producao|operador|montador|mecanic|eletricist|manutencao|solda|usinagem|torneiro|ajudante geral|industrial|qualidade|quimic|engenh|tecnico|fabrica|laborator|\bpcp\b|lider de|encarregad|pintor|marceneir|costureir/ },
+  { id: 'administrativo', nome: 'Administrativo', re: /administrativ|\badm\b|secretari|financeir|contab|fiscal|\brh\b|recursos humanos|departamento pessoal|\bdp\b|faturamento|compras|juridic|escritorio|controller|tesourar|cobranca|credito/ },
+];
+// ordem dos botões na tela (TI fica no fim de propósito: o grupo é de todas as áreas)
+const ORDEM_BOTOES = ['administrativo', 'vendas', 'producao', 'logistica', 'saude', 'servicos', 'aprendiz', 'ti', 'outras'];
+const OUTRAS = { id: 'outras', nome: 'Outras' };
+
+function areaDaVaga(v) {
+  const t = String(v.titulo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return AREAS.find((a) => a.re.test(t)) || OUTRAS;
+}
+
+function vagasVisiveis() {
+  if (estado.filtroArea === 'todas') return estado.vagas;
+  const lista = estado.vagas.filter((v) => areaDaVaga(v).id === estado.filtroArea);
+  if (!lista.length) { estado.filtroArea = 'todas'; return estado.vagas; }
+  return lista;
+}
+
+function htmlFiltros() {
+  const contagem = {};
+  estado.vagas.forEach((v) => { const a = areaDaVaga(v); contagem[a.id] = (contagem[a.id] || 0) + 1; });
+  const botoes = [{ id: 'todas', nome: 'Todas', n: estado.vagas.length }]
+    .concat(ORDEM_BOTOES.map((id) => AREAS.concat([OUTRAS]).find((a) => a.id === id))
+      .filter((a) => contagem[a.id]).map((a) => ({ id: a.id, nome: a.nome, n: contagem[a.id] })));
+  if (botoes.length <= 2) return '';
+  return `<div class="filtros" role="tablist" aria-label="Filtrar por área">${botoes.map((b) =>
+    `<button class="filtro ${estado.filtroArea === b.id ? 'ativo' : ''}" data-area="${b.id}" role="tab" aria-selected="${estado.filtroArea === b.id}">${esc(b.nome)}<span class="n">${b.n}</span></button>`).join('')}</div>`;
+}
 
 // ------------------------- Configuração -------------------------
 function lerHash() {
@@ -245,6 +306,7 @@ function lerHash() {
   if (p.get('api') && p.get('chave')) {
     estado.config = { api: p.get('api').trim(), chave: p.get('chave').trim() };
     armazenamento.gravar('vagas_config', estado.config);
+    estado.demo = false;
     history.replaceState(null, '', location.pathname + location.search);
   }
 }
@@ -718,6 +780,7 @@ function htmlCartao(v, i) {
   const selos = [
     v.conferida ? '<span class="selo ok">✓ Conferida no LinkedIn</span>' : '<span class="selo alerta">⚠ Não conferida</span>',
     v.publicada ? `<span class="selo neutro">${esc(v.publicada)}</span>` : '',
+    `<span class="selo neutro">${esc(areaDaVaga(v).nome)}</span>`,
   ].join('');
   const sub = [v.empresa, v.local].filter(Boolean).join(' · ');
   let editor = '';
@@ -787,16 +850,19 @@ function desenhar() {
     : 'Buscar vagas novas';
 
   let html = '';
-  if (estado.carregando) html += '<div class="faixa info">Pode levar até 1 minuto: o app confere cada vaga no LinkedIn com calma para não ser bloqueado.</div>';
+  if (estado.carregando) html += '<div class="faixa info">Pode levar até 2 minutos: o app confere cada vaga no LinkedIn com calma para não ser bloqueado.</div>';
   if (estado.erro) html += `<div class="faixa erro">${esc(estado.erro)}</div>`;
   if (estado.resumoBusca && !estado.carregando) html += `<div class="faixa info">${esc(estado.resumoBusca)}</div>`;
   if (estado.linkedinLimitou && !estado.carregando) {
     html += '<div class="faixa alerta">O LinkedIn limitou as consultas agora. As vagas com ⚠ não foram conferidas: abra o link antes de enviar, ou busque de novo mais tarde.</div>';
   }
 
+  const visiveis = vagasVisiveis();
   if (estado.vagas.length) {
-    html += `<h2 class="secao">Prontas para enviar (${estado.vagas.length})</h2>`;
-    html += estado.vagas.map(htmlCartao).join('');
+    const filtrada = visiveis.length !== estado.vagas.length;
+    html += `<h2 class="secao">Prontas para enviar (${filtrada ? visiveis.length + ' de ' + estado.vagas.length : estado.vagas.length})</h2>`;
+    html += htmlFiltros();
+    html += visiveis.map(htmlCartao).join('');
   } else if (!estado.carregando) {
     html += `<div class="vazio"><strong>Nenhuma vaga esperando</strong>Toque em "Buscar vagas novas" para ler os alertas do LinkedIn.</div>`;
   }
@@ -811,7 +877,7 @@ function desenhar() {
   main.innerHTML = html;
 
   // barra de envio
-  const total = estado.vagas.length;
+  const total = visiveis.length;
   $('barraEnvio').classList.toggle('oculto', !total || estado.carregando);
   $('contador').textContent = '1 de ' + total;
 
@@ -983,6 +1049,13 @@ function telaConfiguracoes(main) {
 
 // ------------------------- Eventos -------------------------
 document.addEventListener('click', (e) => {
+  const f = e.target.closest('[data-area]');
+  if (f) {
+    estado.filtroArea = f.dataset.area; estado.aberta = null;
+    armazenamento.gravar('vagas_filtro_area', estado.filtroArea);
+    desenhar();
+    return;
+  }
   const t = e.target.closest('[data-abrir],[data-descartar],[data-enviar]');
   if (!t) return;
   if (t.dataset.abrir) {
@@ -1003,7 +1076,7 @@ document.addEventListener('change', (e) => {
   if (t.tagName === 'SELECT' && t.dataset.campo) editar(t.dataset.id, t.dataset.campo, t.value);
 });
 $('btnBuscar').onclick = buscar;
-$('btnEnviarProxima').onclick = () => { if (estado.vagas[0]) enviar(estado.vagas[0].id); };
+$('btnEnviarProxima').onclick = () => { const v = vagasVisiveis()[0]; if (v) enviar(v.id); };
 $('btnConfig').onclick = () => {
   if (!estado.demo && !(estado.config && estado.config.api)) return;
   estado.telaConfig = !estado.telaConfig; estado.rascunho = null; desenhar();
@@ -1032,6 +1105,8 @@ const demo = {
       { id: '4479099544', titulo: 'Supervisor(a) Administrativo-Financeiro (a)', empresa: 'Oxi-Maq Comercial e Industrial de Equipamentos', empresaOriginal: 'Oxi-Maq Comercial e Industrial de Equipamentos', local: 'Araraquara/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 2 dias', link: 'https://www.linkedin.com/jobs/view/4479099544/', conferida: true, aviso: '', logo: demo.logo('OXI', '#e31b23') },
       { id: '4389848415', titulo: 'Executivo de Vendas Pl.', empresa: 'PagBank', empresaOriginal: 'PagBank', local: 'Matão/SP', modalidade: '', jornada: 'Tempo integral', publicada: 'Há 5 dias', link: 'https://www.linkedin.com/jobs/view/4389848415/', conferida: true, aviso: '', logo: demo.logo('PB', '#16a34a') },
       { id: '4488196470', titulo: 'Operador(a) de Loja/Repositor - Parque Faber', empresa: 'GPA', empresaOriginal: 'GPA', local: 'São Carlos/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 1 dia', link: 'https://www.linkedin.com/jobs/view/4488196470/', conferida: true, aviso: '', logo: demo.logo('GPA', '#0b4ea2') },
+      { id: '4400000201', titulo: 'Analista de Sistemas', empresa: 'Jobbol', empresaOriginal: 'Jobbol', local: 'Araraquara/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 3 dias', link: 'https://www.linkedin.com/jobs/view/4400000201/', conferida: true, aviso: '', logo: demo.logo('J', '#2563eb') },
+      { id: '4400000202', titulo: 'Técnico(a) de Enfermagem', empresa: 'Santa Casa', empresaOriginal: 'Santa Casa', local: 'São Carlos/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 1 dia', link: 'https://www.linkedin.com/jobs/view/4400000202/', conferida: true, aviso: '', logo: '' },
       { id: '4400000004', titulo: 'Auxiliar de Logística', empresa: 'Transportadora Exemplo', empresaOriginal: 'Transportadora Exemplo', local: 'Taquaritinga/SP', modalidade: '', jornada: '', publicada: '', link: 'https://www.linkedin.com/jobs/view/4400000004/', conferida: false, aviso: 'Não deu para conferir no LinkedIn agora. Abra o link antes de enviar.', logo: '' },
     ];
   },
@@ -1059,7 +1134,9 @@ const demo = {
   $('logoAbertura').src = LOGOS.pania;
   el.querySelector('.logo-brilho').style.setProperty('--logo-mascara', `url("${LOGOS.pania}")`);
   let fechada = false;
-  const fechar = () => { if (fechada) return; fechada = true; el.classList.add('saindo'); setTimeout(() => el.remove(), 550); };
+  const tema = document.querySelector('meta[name="theme-color"]');
+  // durante a abertura a barra do celular fica preta; depois volta ao vinho do app
+  const fechar = () => { if (fechada) return; fechada = true; el.classList.add('saindo'); if (tema) tema.content = '#4a0a1f'; setTimeout(() => el.remove(), 550); };
   el.addEventListener('click', fechar);
   setTimeout(fechar, AJUSTES.TEMPO_ABERTURA_MS);
 })();
