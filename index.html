@@ -867,12 +867,12 @@ function desenhar() {
   if (estado.carregando) html += '<div class="faixa info">Pode levar até 2 minutos: o app confere cada vaga no LinkedIn com calma para não ser bloqueado.</div>';
   if (estado.erro) html += `<div class="faixa erro">${esc(estado.erro)}</div>`;
   if (estado.resumoBusca && !estado.carregando) html += `<div class="faixa info">${esc(estado.resumoBusca)}</div>`;
-  if (estado.linkedinLimitou && !estado.carregando) {
+  if (estado.linkedinLimitou && !estado.carregando && estado.vagas.some((v) => !v.conferida)) {
     html += '<div class="faixa alerta">O LinkedIn limitou as consultas agora. As vagas com ⚠ não foram conferidas: abra o link antes de enviar, ou busque de novo mais tarde.</div>';
   }
 
   if (estado.aguardando && !estado.carregando) {
-    html += `<div class="faixa info">${estado.aguardando === 1 ? '1 vaga nova ainda está' : estado.aguardando + ' vagas novas ainda estão'} sendo conferida(s) no LinkedIn e aparece(m) na próxima busca.</div>`;
+    html += `<div class="faixa info">${estado.aguardando === 1 ? '1 vaga nova ainda vai ser conferida no LinkedIn e aparece' : estado.aguardando + ' vagas novas ainda vão ser conferidas no LinkedIn e aparecem'} na próxima busca.</div>`;
   }
   const visiveis = vagasVisiveis();
   if (estado.vagas.length) {
