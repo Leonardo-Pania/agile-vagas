@@ -31,12 +31,13 @@
   header.topo { background: linear-gradient(160deg, var(--topo-1), var(--topo-2)); color: var(--marca); padding: 14px 0 16px;
     border-bottom: 1px solid #E8D5BC;
     padding-top: calc(14px + env(safe-area-inset-top)); }
-  .topo .linha { display: flex; align-items: center; gap: 12px; }
+  .topo .linha { display: flex; align-items: center; gap: 8px; }
   .topo h1 { font-size: 20px; margin: 0; flex: 1; letter-spacing: .2px; }
   .topo .sub { color: var(--suave); font-size: 13px; margin-top: 2px; }
   .icone-btn { background: rgba(122,16,38,.08); border: 0; border-radius: 10px; width: 40px; height: 40px;
     display: grid; place-items: center; color: var(--marca); }
   .icone-btn svg { width: 22px; height: 22px; }
+  .icone-btn.ativo { background: var(--marca); color: #FFF4E3; }
 
   .btn { border: 0; border-radius: 12px; padding: 13px 16px; font-weight: 650; display: inline-flex;
     align-items: center; justify-content: center; gap: 8px; min-height: 48px; }
@@ -172,6 +173,47 @@
   .filtro .n { opacity: .75; margin-left: 4px; font-weight: 500; }
   .config details { margin-top: 20px; border-top: 1px solid var(--borda); padding-top: 12px; }
   .config details summary { color: var(--suave); font-weight: 650; cursor: pointer; padding: 6px 0; }
+  /* Modalidade: presencial / home office */
+  .modos { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 10px; margin: 0 -2px; scrollbar-width: none; }
+  .modos::-webkit-scrollbar { display: none; }
+  .modo { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--borda); background: #fff;
+    color: var(--texto); border-radius: 10px; padding: 7px 12px; font-size: 14px; font-weight: 650; min-height: 40px; }
+  .modo svg { width: 17px; height: 17px; flex: none; }
+  .modo .n { opacity: .7; font-weight: 500; }
+  .modo.ativo { background: var(--texto); border-color: var(--texto); color: #FFF4E3; }
+  .modo.zerado { color: var(--suave); opacity: .6; }
+  .selo.casa { background: #F3E2C7; color: #6b4a12; }
+  .selo.manual { background: var(--marca-suave); color: var(--marca); }
+  /* Conserto da conexão (colar o link) */
+  .conserto { background: #fff; border: 1px solid #f3c4bf; border-radius: 12px; padding: 12px 14px; margin-top: 10px; font-size: 14.5px; }
+  .conserto .campo { margin-top: 8px; }
+  .link-curto { font-size: 13px !important; word-break: break-all; }
+  /* Resumo das enviadas */
+  .totais { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+  .total { background: var(--marca-suave); border-radius: 12px; padding: 10px 6px; text-align: center; }
+  .total b { display: block; font-size: 26px; line-height: 1.15; color: var(--marca); font-variant-numeric: tabular-nums; }
+  .total span { font-size: 12.5px; color: var(--suave); font-weight: 650; }
+  .seg { display: inline-flex; background: #F2E9E2; border-radius: 10px; padding: 3px; margin-top: 16px; }
+  .seg button { border: 0; background: none; padding: 7px 14px; border-radius: 8px; font-weight: 650; font-size: 14px; color: var(--suave); min-height: 36px; }
+  .seg button.ativo { background: #fff; color: var(--marca); box-shadow: 0 1px 3px rgba(43,27,31,.14); }
+  .barras { display: grid; gap: 9px; }
+  .barra-linha { display: grid; grid-template-columns: minmax(0, 8em) minmax(0, 1fr) 2.4em; align-items: center; gap: 10px; font-size: 14px; }
+  .barra-linha .rotulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .barra-linha .trilho { height: 10px; background: #F2E9E2; border-radius: 0 4px 4px 0; overflow: hidden; }
+  .barra-linha .trilho i { display: block; height: 100%; background: var(--marca); border-radius: 0 4px 4px 0; }
+  .barra-linha .valor { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .colunas { display: grid; gap: 2px; margin-top: 6px; }
+  .coluna { display: flex; flex-direction: column; align-items: center; min-width: 0; cursor: default; }
+  .coluna .area { height: 104px; width: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+    border-bottom: 1px solid var(--borda); }
+  .coluna .area i { display: block; width: 72%; max-width: 24px; background: var(--marca); border-radius: 4px 4px 0 0; }
+  .coluna .area i.hoje { background: var(--destaque); }
+  .coluna .v { font-size: 12px; font-weight: 700; color: var(--texto); margin-bottom: 3px; font-variant-numeric: tabular-nums; }
+  .coluna .d { font-size: 11px; color: var(--suave); height: 15px; margin-top: 4px; white-space: nowrap; }
+  .enviada-item { padding: 9px 0; border-top: 1px solid var(--borda); font-size: 14.5px; }
+  .enviada-item:first-child { border-top: 0; }
+  .enviada-item .hora { color: var(--suave); font-variant-numeric: tabular-nums; margin-right: 6px; }
+  .enviada-item .sub { color: var(--suave); font-size: 13px; }
   .credito { text-align: center; color: var(--suave); font-size: 12.5px; margin: 22px 0 4px; letter-spacing: .3px; }
 </style>
 </head>
@@ -186,7 +228,13 @@
         <h1 id="tituloApp">Agile Consultoria</h1>
         <div class="sub" id="subtitulo">&nbsp;</div>
       </div>
-      <button class="icone-btn" id="btnConfig" aria-label="Configurações">
+      <button class="icone-btn" id="btnAdicionar" aria-label="Adicionar vaga" title="Adicionar vaga">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button class="icone-btn" id="btnResumo" aria-label="Vagas enviadas" title="Vagas enviadas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M6.5 16v-5M12 16V6M17.5 16v-8"/></svg>
+      </button>
+      <button class="icone-btn" id="btnConfig" aria-label="Configurações" title="Configurações">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
       </button>
     </div>
@@ -266,6 +314,11 @@ const estado = {
   ajustesServidor: null,  // cidades, dias e textos salvos no servidor
   rascunho: null,         // edição em andamento na tela de Configurações
   filtroArea: armazenamento.ler('vagas_filtro_area', 'todas'),
+  filtroModo: armazenamento.ler('vagas_filtro_modo', 'todas'),
+  telaAdicionar: null,    // { etapa: 'link' | 'dados', link, dados, carregando, erro }
+  telaResumo: false,
+  resumo: null,           // { carregando, dados, erro }
+  periodoResumo: 7,
 };
 
 // ------------------------- Áreas (filtro da lista) -------------------------
@@ -288,17 +341,53 @@ function areaDaVaga(v) {
   return AREAS.find((a) => a.re.test(t)) || OUTRAS;
 }
 
+// ------------------------- Modalidade (presencial / home office) -------------------------
+const MODOS = [
+  { id: 'presencial', nome: 'Presencial',
+    icone: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8.5 7.5h1M14.5 7.5h1M8.5 11.5h1M14.5 11.5h1M10 21v-4h4v4"/>' },
+  { id: 'homeoffice', nome: 'Home office',
+    icone: '<path d="M3 11l9-7 9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/>' },
+  { id: 'hibrido', nome: 'Híbrido',
+    icone: '<path d="M16 3l4 4-4 4"/><path d="M20 7H8a4 4 0 0 0-4 4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h12a4 4 0 0 0 4-4"/>' },
+];
+// Anúncio que não fala em remoto/home office nem em híbrido conta como presencial no filtro
+// (quase todas as vagas da região são presenciais e muitos anúncios nem citam)
+function modoDaVaga(v) { return { 'híbrida': 'hibrido', 'remota': 'homeoffice' }[v.modalidade] || 'presencial'; }
+function nomeModo(id) { const m = MODOS.find((x) => x.id === id); return m ? m.nome : ''; }
+const ehLinkedIn = (v) => /linkedin\.com/i.test(String(v.link || ''));
+
 function vagasVisiveis() {
-  if (estado.filtroArea === 'todas') return estado.vagas;
-  const lista = estado.vagas.filter((v) => areaDaVaga(v).id === estado.filtroArea);
-  if (!lista.length) { estado.filtroArea = 'todas'; return estado.vagas; }
+  let lista = estado.vagas;
+  if (!lista.length) return lista; // ainda carregando: não mexe nos filtros guardados
+  if (estado.filtroModo !== 'todas') {
+    const l = lista.filter((v) => modoDaVaga(v) === estado.filtroModo);
+    if (l.length) lista = l; else estado.filtroModo = 'todas';
+  }
+  if (estado.filtroArea !== 'todas') {
+    const l = lista.filter((v) => areaDaVaga(v).id === estado.filtroArea);
+    if (l.length) lista = l; else estado.filtroArea = 'todas';
+  }
   return lista;
 }
 
+function htmlModos() {
+  const n = {};
+  estado.vagas.forEach((v) => { const m = modoDaVaga(v); n[m] = (n[m] || 0) + 1; });
+  // Presencial e Home office aparecem sempre (mesmo com 0); Híbrido só quando tem vaga
+  const botoes = [{ id: 'todas', nome: 'Todas', n: estado.vagas.length, icone: '' }]
+    .concat(MODOS.filter((m) => n[m.id] || m.id === 'presencial' || m.id === 'homeoffice')
+      .map((m) => ({ id: m.id, nome: m.nome, n: n[m.id] || 0, icone: m.icone })));
+  return `<div class="modos" role="tablist" aria-label="Filtrar por modalidade">${botoes.map((b) =>
+    `<button class="modo ${estado.filtroModo === b.id ? 'ativo' : ''} ${b.n ? '' : 'zerado'}" data-modo="${b.id}" role="tab" aria-selected="${estado.filtroModo === b.id}">${b.icone
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${b.icone}</svg>` : ''}${esc(b.nome)}<span class="n">${b.n}</span></button>`).join('')}</div>`;
+}
+
 function htmlFiltros() {
+  // as áreas contam só as vagas da modalidade escolhida
+  const base = estado.filtroModo === 'todas' ? estado.vagas : estado.vagas.filter((v) => modoDaVaga(v) === estado.filtroModo);
   const contagem = {};
-  estado.vagas.forEach((v) => { const a = areaDaVaga(v); contagem[a.id] = (contagem[a.id] || 0) + 1; });
-  const botoes = [{ id: 'todas', nome: 'Todas', n: estado.vagas.length }]
+  base.forEach((v) => { const a = areaDaVaga(v); contagem[a.id] = (contagem[a.id] || 0) + 1; });
+  const botoes = [{ id: 'todas', nome: 'Todas', n: base.length }]
     .concat(ORDEM_BOTOES.map((id) => AREAS.concat([OUTRAS]).find((a) => a.id === id))
       .filter((a) => contagem[a.id]).map((a) => ({ id: a.id, nome: a.nome, n: contagem[a.id] })));
   if (botoes.length <= 2) return '';
@@ -424,7 +513,8 @@ const comPonto = (t) => { t = String(t || '').trim().replace(/[;,]+$/, ''); retu
 function montarMensagem(v) {
   const l = [AJUSTES.CABECALHO_MSG, '', v.titulo || '(cargo)'];
   const bloco = [];
-  if (v.local) bloco.push('📍 ' + v.local);
+  if (v.modalidade === 'remota') bloco.push('📍 Home office' + (v.local ? ' (' + v.local + ')' : ''));
+  else if (v.local) bloco.push('📍 ' + v.local);
   if (v.jornada) bloco.push('⏰ ' + comPonto(v.jornada));
   if (v.empresa) bloco.push('Empresa: ' + v.empresa);
   if (bloco.length) l.push('', ...bloco);
@@ -454,7 +544,7 @@ function obterArte(v) {
 }
 
 function rotuloModalidade(m) {
-  return { 'presencial': 'Presencial', 'híbrida': 'Híbrido', 'remota': 'Remoto' }[m] || '';
+  return { 'presencial': 'Presencial', 'híbrida': 'Híbrido', 'remota': 'Home office' }[m] || '';
 }
 
 function quebrarLinhas(g, texto, largura) {
@@ -733,7 +823,8 @@ async function enviar(id) {
     return;
   }
   enviando = false;
-  registrar('enviada', { id: v.id, empresaOriginal: v.empresaOriginal || '', empresa: v.empresa || '' });
+  registrar('enviada', { id: v.id, empresaOriginal: v.empresaOriginal || '', empresa: v.empresa || '',
+    titulo: v.titulo || '', cidade: v.local || '', area: areaDaVaga(v).nome, modalidade: nomeModo(modoDaVaga(v)) });
   removerDaTela(v.id, () => aviso('Vaga enviada ✓'));
 }
 
@@ -815,10 +906,18 @@ function quando(ms) {
   return 'Vagas · última busca em ' + d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' às ' + hora;
 }
 
+function opcoesModalidade(atual) {
+  return [['', '(não informar)'], ['presencial', 'Presencial'], ['híbrida', 'Híbrido'], ['remota', 'Home office']]
+    .map(([val, rot]) => `<option value="${val}" ${atual === val ? 'selected' : ''}>${rot}</option>`).join('');
+}
+
 function htmlCartao(v, i) {
   const aberto = estado.aberta === v.id;
+  const modo = modoDaVaga(v);
   const selos = [
-    v.conferida ? '<span class="selo ok">✓ Conferida no LinkedIn</span>' : '<span class="selo alerta">⚠ Não conferida</span>',
+    v.manual ? '<span class="selo manual">Adicionada por você</span>' : '',
+    v.manual && !ehLinkedIn(v) ? '' : v.conferida ? '<span class="selo ok">✓ Conferida no LinkedIn</span>' : '<span class="selo alerta">⚠ Não conferida</span>',
+    modo === 'homeoffice' ? '<span class="selo casa">Home office</span>' : v.modalidade ? `<span class="selo neutro">${nomeModo(modo)}</span>` : '',
     v.publicada ? `<span class="selo neutro">${esc(v.publicada)}</span>` : '',
     `<span class="selo neutro">${esc(areaDaVaga(v).nome)}</span>`,
   ].join('');
@@ -838,8 +937,7 @@ function htmlCartao(v, i) {
           <input id="f-local-${v.id}" data-campo="local" data-id="${v.id}" value="${esc(v.local)}" placeholder="Araraquara/SP"></div>
         <div class="campo"><label for="f-modalidade-${v.id}">Modalidade</label>
           <select id="f-modalidade-${v.id}" data-campo="modalidade" data-id="${v.id}">
-            ${[['', '(não informar)'], ['presencial', 'Presencial'], ['híbrida', 'Híbrida'], ['remota', 'Remota']]
-              .map(([val, rot]) => `<option value="${val}" ${v.modalidade === val ? 'selected' : ''}>${rot}</option>`).join('')}
+            ${opcoesModalidade(v.modalidade)}
           </select></div>
       </div>
       <div class="campo"><label for="f-jornada-${v.id}">Jornada</label>
@@ -852,7 +950,7 @@ function htmlCartao(v, i) {
         <div class="dica">Vazio = link da vaga no LinkedIn. Se tiver o link do site da empresa, cole aqui.</div></div>
       <div class="previa" data-previa="${v.id}">${esc(montarMensagem(v))}</div>
       <div class="acoes" style="padding:12px 0 0">
-        <a class="btn btn-claro btn-pequeno" href="${esc(v.link)}" target="_blank" rel="noopener">Abrir no LinkedIn</a>
+        <a class="btn btn-claro btn-pequeno" href="${esc(v.link)}" target="_blank" rel="noopener">${ehLinkedIn(v) ? 'Abrir no LinkedIn' : 'Abrir a vaga'}</a>
         <button class="btn btn-verde btn-pequeno" data-enviar="${v.id}">Enviar esta agora</button>
       </div>
     </div>`;
@@ -881,9 +979,16 @@ function desenhar() {
   $('tituloApp').textContent = AJUSTES.TITULO_APP + (estado.demo ? ' (demonstração)' : '');
   const semConfig = !estado.demo && !(estado.config && estado.config.api && estado.config.chave);
   const main = $('principal');
+  $('btnAdicionar').classList.toggle('oculto', semConfig);
+  $('btnResumo').classList.toggle('oculto', semConfig);
+  $('btnAdicionar').classList.toggle('ativo', !semConfig && !!estado.telaAdicionar);
+  $('btnResumo').classList.toggle('ativo', !semConfig && estado.telaResumo);
+  $('btnConfig').classList.toggle('ativo', !semConfig && estado.telaConfig);
 
   if (semConfig) { telaConexao(main); return; }
   if (estado.telaConfig) { telaConfiguracoes(main); return; }
+  if (estado.telaAdicionar) { telaAdicionar(main); return; }
+  if (estado.telaResumo) { telaResumo(main); return; }
 
   $('btnBuscar').classList.remove('oculto');
   $('subtitulo').textContent = quando(estado.ultimaBusca);
@@ -894,9 +999,15 @@ function desenhar() {
 
   let html = '';
   if (estado.carregando) html += '<div class="faixa info">Pode levar até 2 minutos: o app confere cada vaga no LinkedIn com calma para não ser bloqueado.</div>';
-  if (estado.erro) html += `<div class="faixa erro">${esc(estado.erro)}</div>`;
+  if (estado.erro) {
+    html += `<div class="faixa erro">${esc(estado.erro)}</div>`;
+    // chave errada ou endereço errado: dá para consertar colando o link de configuração
+    if (!estado.demo && /chave|inesperado|implantado|endereço/i.test(estado.erro)) {
+      html += `<div class="conserto"><b>Para consertar:</b> cole aqui o link de configuração que você recebeu.${htmlColarConfig('Link de configuração')}</div>`;
+    }
+  }
   if (estado.resumoBusca && !estado.carregando) html += `<div class="faixa info">${esc(estado.resumoBusca)}</div>`;
-  if (estado.linkedinLimitou && !estado.carregando && estado.vagas.some((v) => !v.conferida)) {
+  if (estado.linkedinLimitou && !estado.carregando && estado.vagas.some((v) => !v.conferida && ehLinkedIn(v))) {
     html += '<div class="faixa alerta">O LinkedIn limitou as consultas agora. As vagas com ⚠ não foram conferidas: abra o link antes de enviar, ou busque de novo mais tarde.</div>';
   }
 
@@ -907,6 +1018,7 @@ function desenhar() {
   if (estado.vagas.length) {
     const filtrada = visiveis.length !== estado.vagas.length;
     html += `<h2 class="secao">Prontas para enviar (${filtrada ? visiveis.length + ' de ' + estado.vagas.length : estado.vagas.length})</h2>`;
+    html += htmlModos();
     html += htmlFiltros();
     html += visiveis.map(htmlCartao).join('');
   } else if (!estado.carregando) {
@@ -923,6 +1035,7 @@ function desenhar() {
     </details>`;
   }
   main.innerHTML = html;
+  ligarColarConfig();
 
   // barra de envio
   const total = visiveis.length;
@@ -963,19 +1076,318 @@ function salvarConexao() {
   estado.demo = false; fecharConfig(() => carregarFila());
 }
 
+// O link de configuração é o endereço do app com "#api=...&chave=..." no fim
+function lerLinkConfig(texto) {
+  const s = String(texto || '');
+  const api = (s.match(/[#?&]api=([^&\s#]+)/) || [])[1];
+  const chave = (s.match(/[#?&]chave=([^&\s#]+)/) || [])[1];
+  if (!api || !chave) return null;
+  let c;
+  try { c = { api: decodeURIComponent(api).trim(), chave: decodeURIComponent(chave).trim() }; } catch (e) { return null; }
+  return /^https:\/\/script\.google\.com\/.+\/exec$/.test(c.api) && c.chave ? c : null;
+}
+
+async function lerAreaTransferencia() {
+  try {
+    const t = await navigator.clipboard.readText();
+    if (t && t.trim()) return t.trim();
+  } catch (e) { /* o celular não deixou */ }
+  aviso('Não deu para colar sozinho. Toque e segure no campo e escolha "Colar".');
+  return '';
+}
+
+function htmlColarConfig(rotulo) {
+  return `
+    <div class="campo"><label for="cfgLink">${esc(rotulo)}</label>
+      <div class="linha-add" style="margin-top:0">
+        <input id="cfgLink" placeholder="Cole aqui o link" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="btn btn-claro btn-pequeno" id="cfgColar">Colar</button></div></div>
+    <button class="btn btn-verde" id="cfgUsarLink" style="width:100%;margin-top:10px">Conectar</button>`;
+}
+
+function ligarColarConfig() {
+  if (!$('cfgLink')) return;
+  $('cfgColar').onclick = async () => {
+    const t = await lerAreaTransferencia();
+    if (t) { $('cfgLink').value = t; usarLinkConfig(t); }
+  };
+  $('cfgUsarLink').onclick = () => usarLinkConfig($('cfgLink').value);
+  $('cfgLink').onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); usarLinkConfig($('cfgLink').value); } };
+}
+
+async function usarLinkConfig(texto) {
+  const c = lerLinkConfig(texto);
+  if (!c) { aviso('Esse não é o link de configuração. Confira se copiou o link inteiro.'); return; }
+  estado.config = c; armazenamento.gravar('vagas_config', c);
+  estado.demo = false; estado.erro = '';
+  const conectar = async () => {
+    await carregarFila();
+    aviso(estado.erro ? 'Ainda não conectou: ' + estado.erro : 'Conectado ✓');
+  };
+  if (telaAtual()) fecharTela(conectar); else { desenhar(); conectar(); }
+}
+
 function telaConexao(main) {
   prepararTelaSemBusca('primeiro acesso');
   main.innerHTML = `
     <section class="config">
       <h2>Conectar o app</h2>
-      <p>O jeito mais fácil é abrir o <b>link de configuração</b> (ele já traz tudo). Ou cole os dados abaixo.</p>
-      ${htmlConexao(estado.config || {})}
-      <div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-verde" id="cfgSalvar" style="flex:1">Conectar</button></div>
+      <p>Cole o <b>link de configuração</b> que você recebeu. Ele já traz tudo.</p>
+      ${htmlColarConfig('Link de configuração')}
+      <details>
+        <summary>Preencher endereço e chave separados</summary>
+        ${htmlConexao(estado.config || {})}
+        <div style="margin-top:12px"><button class="btn btn-claro btn-pequeno" id="cfgSalvar">Conectar com esses dados</button></div>
+      </details>
       <p style="margin-top:16px;text-align:center"><a href="#demo" id="cfgDemo">Ver uma demonstração</a></p>
       <p class="credito">Desenvolvido por Pania Company</p>
     </section>`;
+  ligarColarConfig();
   $('cfgSalvar').onclick = salvarConexao;
   $('cfgDemo').onclick = (e) => { e.preventDefault(); estado.demo = true; desenhar(); carregarFila(); };
+}
+
+// ------------------------- Adicionar vaga (ela cola o link) -------------------------
+function extrairLink(texto) {
+  const m = String(texto || '').match(/https?:\/\/[^\s<>"']+/i);
+  return m ? m[0].replace(/[).,;!]+$/, '') : '';
+}
+
+function vagaNova(d) {
+  return { id: '__nova', titulo: d.titulo || '', empresa: d.empresa || '', local: d.local || '', modalidade: d.modalidade || '',
+    jornada: d.jornada || '', beneficios: d.beneficios || '', link: d.link || '', logo: d.logo || '' };
+}
+
+async function lerLinkVaga() {
+  const t = estado.telaAdicionar;
+  if (!t || t.carregando) return;
+  const link = extrairLink(t.link);
+  if (!link) { t.erro = 'Cole o link da vaga (começa com https://).'; desenhar(); return; }
+  t.link = link; t.carregando = true; t.erro = '';
+  desenhar();
+  try {
+    const r = await chamar('lerLink', { link });
+    if (estado.telaAdicionar !== t) return; // ela saiu da tela
+    t.dados = Object.assign({ titulo: '', empresa: '', local: '', modalidade: '', jornada: '', beneficios: '' }, r);
+    t.etapa = 'dados';
+  } catch (e) {
+    if (estado.telaAdicionar !== t) return;
+    t.erro = e.message;
+  }
+  t.carregando = false;
+  desenhar(); window.scrollTo(0, 0);
+}
+
+async function adicionarVaga() {
+  const t = estado.telaAdicionar;
+  if (!t || t.salvando) return;
+  const d = t.dados;
+  if (!String(d.titulo || '').trim()) { aviso('Falta o cargo da vaga.'); $('novo-titulo').focus(); return; }
+  t.salvando = true; t.erro = '';
+  desenhar();
+  try {
+    const r = await chamar('adicionar', { dados: JSON.stringify({
+      link: d.link, titulo: d.titulo, empresa: d.empresa, empresaOriginal: d.empresaOriginal || '', local: d.local,
+      modalidade: d.modalidade, jornada: d.jornada, beneficios: d.beneficios, logoUrl: d.logoUrl || '', conferida: !!d.conferida }) });
+    aplicarResposta(r);
+    // tira os filtros para ela ver a vaga nova, que entra no topo da lista
+    estado.filtroArea = 'todas'; estado.filtroModo = 'todas';
+    armazenamento.gravar('vagas_filtro_area', 'todas'); armazenamento.gravar('vagas_filtro_modo', 'todas');
+    fecharTela(() => { window.scrollTo(0, 0); aviso('Vaga adicionada no topo da lista ✓'); });
+  } catch (e) {
+    t.salvando = false; t.erro = 'Não deu para adicionar: ' + e.message;
+    desenhar();
+  }
+}
+
+function telaAdicionar(main) {
+  prepararTelaSemBusca('adicionar vaga');
+  const t = estado.telaAdicionar;
+  if (t.etapa !== 'dados') {
+    main.innerHTML = `
+    <section class="config">
+      <h2>Adicionar vaga</h2>
+      <p>Achou uma vaga boa em outro lugar? Cole o link: LinkedIn, Gupy, Indeed, Catho, site da empresa…</p>
+      <div class="campo"><label for="addLink">Link da vaga</label>
+        <div class="linha-add" style="margin-top:0">
+          <input id="addLink" value="${esc(t.link || '')}" placeholder="https://…" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button class="btn btn-claro btn-pequeno" id="addColar">Colar</button></div></div>
+      ${t.erro ? `<div class="faixa erro">${esc(t.erro)}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-claro" id="addVoltar" style="flex:1">Voltar</button>
+        <button class="btn btn-verde" id="addBuscar" style="flex:1.5" ${t.carregando ? 'disabled' : ''}>${t.carregando
+          ? '<span class="girando"></span> Lendo a vaga…' : 'Buscar dados'}</button>
+      </div>
+      <div class="campo"><div class="dica">Do LinkedIn o app preenche tudo e confere se a vaga ainda está aberta. Dos outros sites ele pega o que conseguir e você completa.</div></div>
+    </section>`;
+    $('addLink').oninput = () => { t.link = $('addLink').value; };
+    $('addLink').onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); lerLinkVaga(); } };
+    $('addColar').onclick = async () => {
+      const txt = await lerAreaTransferencia();
+      if (txt) { t.link = txt; $('addLink').value = txt; lerLinkVaga(); }
+    };
+    $('addVoltar').onclick = () => fecharTela();
+    $('addBuscar').onclick = lerLinkVaga;
+    return;
+  }
+  const d = t.dados;
+  const cidades = ajustesAtuais().cidades.map((c) => `<option value="${esc(c)}/SP">`).join('');
+  main.innerHTML = `
+    <section class="config">
+      <h2>Adicionar vaga</h2>
+      <p class="link-curto">${esc(d.link)}</p>
+      ${d.aviso ? `<div class="faixa alerta">${esc(d.aviso)}</div>` : ''}
+      <img class="previa-cfg" data-arte="__nova" alt="Arte da vaga">
+      <div class="campo"><label for="novo-titulo">Cargo</label>
+        <input id="novo-titulo" data-novo="titulo" value="${esc(d.titulo)}" placeholder="Ex.: Auxiliar Administrativo"></div>
+      <div class="campo"><label for="novo-empresa">Empresa</label>
+        <input id="novo-empresa" data-novo="empresa" value="${esc(d.empresa)}"></div>
+      <div class="duas">
+        <div class="campo"><label for="novo-local">Cidade</label>
+          <input id="novo-local" data-novo="local" value="${esc(d.local)}" list="cidadesNova" placeholder="Araraquara/SP">
+          <datalist id="cidadesNova">${cidades}</datalist></div>
+        <div class="campo"><label for="novo-modalidade">Modalidade</label>
+          <select id="novo-modalidade" data-novo="modalidade">${opcoesModalidade(d.modalidade)}</select></div>
+      </div>
+      <div class="campo"><label for="novo-jornada">Jornada</label>
+        <input id="novo-jornada" data-novo="jornada" value="${esc(d.jornada)}" list="jornadas" placeholder="Tempo integral"></div>
+      <div class="campo"><label for="novo-beneficios">Benefícios</label>
+        <textarea id="novo-beneficios" data-novo="beneficios" rows="3" placeholder="Ex.: Vale-alimentação, PLR e assistência médica">${esc(d.beneficios)}</textarea>
+        <div class="dica">Vazio = a linha 🎁 não aparece.</div></div>
+      <div class="previa" id="novaPrevia">${esc(montarMensagem(vagaNova(d)))}</div>
+      ${t.erro ? `<div class="faixa erro">${esc(t.erro)}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-claro" id="addTrocar" style="flex:1">Trocar link</button>
+        <button class="btn btn-verde" id="addConfirmar" style="flex:1.5" ${t.salvando ? 'disabled' : ''}>${t.salvando
+          ? '<span class="girando"></span> Adicionando…' : 'Adicionar à lista'}</button>
+      </div>
+    </section>`;
+  let tempo = null;
+  const atualizar = () => {
+    $('novaPrevia').textContent = montarMensagem(vagaNova(d));
+    clearTimeout(tempo);
+    tempo = setTimeout(() => atualizarArte(vagaNova(d)), 350);
+  };
+  main.querySelectorAll('[data-novo]').forEach((el) => {
+    el.oninput = el.onchange = () => { d[el.dataset.novo] = el.value; atualizar(); };
+  });
+  $('addTrocar').onclick = () => { t.etapa = 'link'; t.erro = ''; desenhar(); };
+  $('addConfirmar').onclick = adicionarVaga;
+  atualizarArte(vagaNova(d));
+}
+
+// ------------------------- Vagas enviadas (resumo) -------------------------
+function diaMenos(iso, n) {
+  const d = new Date(iso + 'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+const dataCurta = (iso) => iso.slice(8, 10) + '/' + iso.slice(5, 7);
+const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+
+function somarPeriodo(dias, hoje, n) {
+  const desde = diaMenos(hoje, n - 1);
+  const t = { n: 0, a: {}, c: {}, m: {} };
+  dias.forEach((d) => {
+    if (d.data < desde || d.data > hoje) return;
+    t.n += d.n || 0;
+    ['a', 'c', 'm'].forEach((k) => Object.entries(d[k] || {}).forEach(([nome, q]) => { t[k][nome] = (t[k][nome] || 0) + q; }));
+  });
+  return t;
+}
+
+function htmlBarras(obj) {
+  let itens = Object.entries(obj).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  if (!itens.length) return '<div class="dica">Nenhuma vaga enviada nesse período.</div>';
+  if (itens.length > 6) { // o resto vira uma linha só
+    const resto = itens.slice(5).reduce((s, x) => s + x[1], 0);
+    itens = itens.slice(0, 5).concat([['Demais', resto]]);
+  }
+  const maior = Math.max(...itens.map((x) => x[1]));
+  return `<div class="barras">${itens.map(([nome, q]) => `
+    <div class="barra-linha"><span class="rotulo">${esc(nome)}</span>
+      <span class="trilho"><i style="width:${Math.max(3, Math.round(q / maior * 100))}%"></i></span>
+      <span class="valor">${q}</span></div>`).join('')}</div>`;
+}
+
+function htmlPorDia(dias, hoje, n) {
+  const porDia = {};
+  dias.forEach((d) => { porDia[d.data] = d.n || 0; });
+  const cols = [];
+  for (let i = n - 1; i >= 0; i--) { const data = diaMenos(hoje, i); cols.push({ data, q: porDia[data] || 0, voltas: i }); }
+  const maior = Math.max(1, ...cols.map((c) => c.q));
+  return `<div class="colunas" style="grid-template-columns:repeat(${n}, minmax(0, 1fr))">${cols.map((c) => {
+    const rotulo = c.voltas === 0 ? 'hoje' : n <= 7 ? DIAS_SEMANA[new Date(c.data + 'T12:00:00Z').getUTCDay()] : (c.voltas % 7 === 0 ? dataCurta(c.data) : '');
+    const texto = (c.voltas === 0 ? 'Hoje' : dataCurta(c.data)) + ': ' + (c.q === 1 ? '1 vaga enviada' : c.q + ' vagas enviadas');
+    return `<div class="coluna" data-dica="${esc(texto)}" title="${esc(texto)}"><div class="area">
+      ${n <= 7 && c.q ? `<span class="v">${c.q}</span>` : ''}<i class="${c.voltas === 0 ? 'hoje' : ''}" style="height:${Math.round(c.q / maior * 80)}px"></i>
+      </div><span class="d">${rotulo}</span></div>`;
+  }).join('')}</div>`;
+}
+
+function htmlListaEnviadas(itens) {
+  return itens.slice().reverse().map((x) => `
+    <div class="enviada-item"><span class="hora">${esc(x[0])}</span>${esc(x[1] || '(sem cargo)')}
+      <div class="sub">${esc([x[2], x[3]].filter(Boolean).join(' · '))}</div></div>`).join('');
+}
+
+async function carregarResumo() {
+  estado.resumo = { carregando: true };
+  if (estado.telaResumo) desenhar();
+  try {
+    await sincronizarPendentes(); // envios feitos sem internet entram antes
+    estado.resumo = { dados: await chamar('resumo') };
+  } catch (e) {
+    estado.resumo = { erro: e.message };
+  }
+  if (estado.telaResumo) desenhar();
+}
+
+function telaResumo(main) {
+  prepararTelaSemBusca('vagas enviadas');
+  if (!estado.resumo) { carregarResumo(); return; }
+  const r = estado.resumo;
+  const voltar = '<div style="margin-top:20px"><button class="btn btn-claro" id="resVoltar" style="width:100%">Voltar</button></div>';
+  if (r.carregando || r.erro) {
+    main.innerHTML = `<section class="config"><h2>Vagas enviadas</h2>
+      ${r.erro ? `<div class="faixa erro">${esc(r.erro)}</div>` : '<div class="vazio"><span class="girando" style="display:inline-block;color:var(--marca)"></span></div>'}
+      ${voltar}</section>`;
+    $('resVoltar').onclick = () => fecharTela();
+    return;
+  }
+  const dias = r.dados.dias || [], hoje = r.dados.hoje;
+  const p = estado.periodoResumo;
+  const doDia = dias.find((d) => d.data === hoje) || { n: 0, i: [] };
+  const ontem = dias.find((d) => d.data === diaMenos(hoje, 1));
+  const periodo = somarPeriodo(dias, hoje, p);
+  const nada = !dias.some((d) => d.n);
+  main.innerHTML = `
+    <section class="config">
+      <h2>Vagas enviadas</h2>
+      <p>Cada vaga enviada pelo app entra aqui.</p>
+      <div class="totais">
+        <div class="total"><b>${doDia.n || 0}</b><span>hoje</span></div>
+        <div class="total"><b>${somarPeriodo(dias, hoje, 7).n}</b><span>7 dias</span></div>
+        <div class="total"><b>${somarPeriodo(dias, hoje, 30).n}</b><span>30 dias</span></div>
+      </div>
+      ${nada ? '<div class="vazio"><strong>Nenhum envio registrado ainda</strong>O resumo começa a contar a partir da primeira vaga enviada.</div>' : `
+      <div class="seg" role="tablist" aria-label="Período">
+        <button class="${p === 7 ? 'ativo' : ''}" data-periodo="7" role="tab" aria-selected="${p === 7}">Últimos 7 dias</button>
+        <button class="${p === 30 ? 'ativo' : ''}" data-periodo="30" role="tab" aria-selected="${p === 30}">Últimos 30 dias</button>
+      </div>
+      <h3>Por dia</h3>${htmlPorDia(dias, hoje, p)}
+      <h3>Por área</h3>${htmlBarras(periodo.a)}
+      <h3>Por cidade</h3>${htmlBarras(periodo.c)}
+      <h3>Modalidade</h3>${htmlBarras(periodo.m)}
+      <h3>Enviadas hoje (${doDia.n || 0})</h3>
+      ${(doDia.i || []).length ? htmlListaEnviadas(doDia.i) : '<div class="dica">Nenhuma vaga enviada hoje ainda.</div>'}
+      ${ontem && (ontem.i || []).length ? `<details><summary>Ontem (${ontem.n})</summary>${htmlListaEnviadas(ontem.i)}</details>` : ''}`}
+      ${voltar}
+    </section>`;
+  $('resVoltar').onclick = () => fecharTela();
+  main.querySelectorAll('[data-periodo]').forEach((b) => {
+    b.onclick = () => { estado.periodoResumo = Number(b.dataset.periodo); desenhar(); };
+  });
 }
 
 function ajustesAtuais() {
@@ -1049,7 +1461,8 @@ function telaConfiguracoes(main) {
 
       <details>
         <summary>Conexão (endereço e chave)</summary>
-        ${estado.demo ? '<p>Você está na demonstração. <a href="#" id="cfgSairDemo">Sair da demonstração</a></p>' : htmlConexao(estado.config || {}) +
+        ${estado.demo ? '<p>Você está na demonstração. <a href="#" id="cfgSairDemo">Sair da demonstração</a></p>'
+          : htmlColarConfig('Colar o link de configuração') + '<p style="margin-top:14px">Ou preencha os dados:</p>' + htmlConexao(estado.config || {}) +
           '<div style="margin-top:12px"><button class="btn btn-claro btn-pequeno" id="cfgSalvarConexao">Salvar conexão</button></div>'}
       </details>
       <p class="credito">Desenvolvido por Pania Company</p>
@@ -1088,6 +1501,7 @@ function telaConfiguracoes(main) {
     }
   };
   if ($('cfgSalvarConexao')) $('cfgSalvarConexao').onclick = salvarConexao;
+  ligarColarConfig();
   if ($('cfgSairDemo')) $('cfgSairDemo').onclick = (e) => {
     e.preventDefault();
     fecharConfig(() => {
@@ -1113,16 +1527,33 @@ function voltarEntao(fn) {
   if (history.state && history.state.tela && history.state.tela !== 'guarda') { depoisDeVoltar = fn || null; history.back(); }
   else if (fn) fn();
 }
-function abrirConfig() {
-  estado.telaConfig = true; estado.rascunho = null;
-  history.pushState({ tela: 'config' }, '');
+// Telas que abrem "por cima" da lista. Trocar de uma para outra não empilha: o "voltar" sempre leva à lista.
+const TELAS = ['config', 'adicionar', 'resumo'];
+function telaAtual() {
+  return estado.telaConfig ? 'config' : estado.telaAdicionar ? 'adicionar' : estado.telaResumo ? 'resumo' : '';
+}
+function mostrarTela(nome) {
+  estado.telaConfig = nome === 'config';
+  if (!estado.telaConfig) estado.rascunho = null;
+  estado.telaAdicionar = nome === 'adicionar' ? (estado.telaAdicionar || { etapa: 'link', link: '' }) : null;
+  estado.telaResumo = nome === 'resumo';
+}
+function abrirTela(nome) {
+  if (telaAtual() === nome) return;
+  estado.rascunho = null; estado.telaAdicionar = null;
+  if (nome === 'resumo') estado.resumo = null; // sempre busca os números de novo
+  const passo = { tela: nome };
+  if (history.state && TELAS.includes(history.state.tela)) history.replaceState(passo, ''); else history.pushState(passo, '');
+  mostrarTela(nome);
   desenhar(); window.scrollTo(0, 0);
 }
-function fecharConfig(depois) {
-  if (history.state && history.state.tela === 'config') { voltarEntao(depois); return; }
-  estado.telaConfig = false; estado.rascunho = null; desenhar();
+function fecharTela(depois) {
+  if (history.state && TELAS.includes(history.state.tela)) { voltarEntao(depois); return; }
+  mostrarTela(''); desenhar();
   if (depois) depois();
 }
+function abrirConfig() { abrirTela('config'); }
+function fecharConfig(depois) { fecharTela(depois); }
 function abrirVaga(id) {
   const passo = { tela: 'vaga', id };
   if (history.state && history.state.tela === 'vaga') history.replaceState(passo, ''); else history.pushState(passo, '');
@@ -1135,12 +1566,13 @@ function fecharVaga() {
   estado.aberta = null; desenhar();
 }
 window.addEventListener('popstate', (e) => {
+  // abriu o link de configuração com o app aberto: quem cuida é o "hashchange"
+  if (location.hash.length > 1) return;
   const passo = e.state || {};
-  const estavaNaLista = !estado.telaConfig && !estado.aberta;
-  estado.telaConfig = passo.tela === 'config';
-  if (!estado.telaConfig) estado.rascunho = null;
+  const estavaNaLista = !telaAtual() && !estado.aberta;
+  mostrarTela(TELAS.includes(passo.tela) ? passo.tela : '');
   if (passo.tela === 'vaga') estado.aberta = estado.vagas.some((v) => v.id === passo.id) ? passo.id : null;
-  else if (passo.tela !== 'config') estado.aberta = null;
+  else if (!TELAS.includes(passo.tela)) estado.aberta = null;
   desenhar();
   if (!e.state) {
     // chegou no começo do histórico: o próximo "voltar" fecha o app
@@ -1155,6 +1587,20 @@ window.addEventListener('popstate', (e) => {
 
 // ------------------------- Eventos -------------------------
 document.addEventListener('click', (e) => {
+  const m = e.target.closest('[data-modo]');
+  if (m) {
+    const id = m.dataset.modo;
+    if (id !== 'todas' && !estado.vagas.some((v) => modoDaVaga(v) === id)) {
+      aviso('Nenhuma vaga ' + nomeModo(id).toLowerCase() + ' na lista agora.');
+      return;
+    }
+    estado.filtroModo = id;
+    armazenamento.gravar('vagas_filtro_modo', id);
+    if (estado.aberta) fecharVaga(); else desenhar();
+    return;
+  }
+  const col = e.target.closest('[data-dica]');
+  if (col) { aviso(col.dataset.dica); return; }
   const f = e.target.closest('[data-area]');
   if (f) {
     estado.filtroArea = f.dataset.area;
@@ -1180,11 +1626,15 @@ document.addEventListener('change', (e) => {
 });
 $('btnBuscar').onclick = buscar;
 $('btnEnviarProxima').onclick = () => { const v = vagasVisiveis()[0]; if (v) enviar(v.id); };
-$('btnConfig').onclick = () => {
-  if (!estado.demo && !(estado.config && estado.config.api)) return;
-  if (estado.telaConfig) fecharConfig(); else abrirConfig();
+const configurado = () => estado.demo || !!(estado.config && estado.config.api);
+const botaoTela = (nome) => () => {
+  if (!configurado()) return;
+  if (telaAtual() === nome) fecharTela(); else abrirTela(nome);
 };
-window.addEventListener('hashchange', () => { lerHash(); desenhar(); carregarFila(); });
+$('btnConfig').onclick = botaoTela('config');
+$('btnAdicionar').onclick = botaoTela('adicionar');
+$('btnResumo').onclick = botaoTela('resumo');
+window.addEventListener('hashchange', () => { lerHash(); colocarGuarda(); desenhar(); carregarFila(); });
 
 const lista = document.createElement('datalist');
 lista.id = 'jornadas';
@@ -1209,15 +1659,68 @@ const demo = {
       { id: '4488196470', titulo: 'Operador(a) de Loja/Repositor - Parque Faber', empresa: 'GPA', empresaOriginal: 'GPA', local: 'São Carlos/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 1 dia', link: 'https://www.linkedin.com/jobs/view/4488196470/', conferida: true, aviso: '', logo: demo.logo('GPA', '#0b4ea2') },
       { id: '4400000201', titulo: 'Analista de Sistemas', empresa: 'Jobbol', empresaOriginal: 'Jobbol', local: 'Araraquara/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 3 dias', link: 'https://www.linkedin.com/jobs/view/4400000201/', conferida: true, aviso: '', logo: demo.logo('J', '#2563eb') },
       { id: '4400000202', titulo: 'Técnico(a) de Enfermagem', empresa: 'Santa Casa', empresaOriginal: 'Santa Casa', local: 'São Carlos/SP', modalidade: 'presencial', jornada: 'Tempo integral', publicada: 'Há 1 dia', link: 'https://www.linkedin.com/jobs/view/4400000202/', conferida: true, aviso: '', logo: '' },
+      { id: '4400000301', titulo: 'Analista de Atendimento ao Cliente', empresa: 'Fintech Exemplo', empresaOriginal: 'Fintech Exemplo', local: 'São Paulo/SP', modalidade: 'remota', jornada: 'Tempo integral', beneficios: 'Vale-refeição, auxílio home office e plano de saúde', publicada: 'Há 1 dia', link: 'https://www.linkedin.com/jobs/view/4400000301/', conferida: true, aviso: '', logo: demo.logo('FE', '#5b21b6') },
+      { id: '4400000302', titulo: 'Assistente Comercial', empresa: 'Distribuidora Exemplo', empresaOriginal: 'Distribuidora Exemplo', local: 'Araraquara/SP', modalidade: 'híbrida', jornada: 'Tempo integral', publicada: 'Há 4 dias', link: 'https://www.linkedin.com/jobs/view/4400000302/', conferida: true, aviso: '', logo: '' },
       { id: '4400000004', titulo: 'Auxiliar de Logística', empresa: 'Transportadora Exemplo', empresaOriginal: 'Transportadora Exemplo', local: 'Taquaritinga/SP', modalidade: '', jornada: '', publicada: '', link: 'https://www.linkedin.com/jobs/view/4400000004/', conferida: false, aviso: 'Não deu para conferir no LinkedIn agora. Abra o link antes de enviar.', logo: '' },
     ];
+  },
+  envios: [],
+  lerLink(link) {
+    const id = (String(link).match(/(\d{8,12})/) || [])[1] || '4499990001';
+    if (/linkedin\.com/i.test(link)) {
+      if (demo.fila && demo.fila.some((v) => v.id === id)) return Promise.reject(new Error('Essa vaga já está na lista para enviar.'));
+      return { ok: true, linkedin: true, conferida: true, id, link: 'https://www.linkedin.com/jobs/view/' + id + '/',
+        titulo: 'Assistente de Recursos Humanos', empresa: 'Usina Exemplo', empresaOriginal: 'Usina Exemplo Açúcar e Álcool S.A.',
+        local: 'Matão/SP', modalidade: 'presencial', jornada: 'Tempo integral', beneficios: 'Vale-alimentação, assistência médica e PLR',
+        logo: demo.logo('UE', '#7A1026'), aviso: '' };
+    }
+    return { ok: true, linkedin: false, conferida: false, link, titulo: 'Atendente de Suporte ao Cliente', empresa: '', local: '',
+      modalidade: 'remota', jornada: '', beneficios: 'Vale-refeição e auxílio home office',
+      aviso: 'Confira e complete os dados: vaga de fora do LinkedIn não é conferida automaticamente.' };
+  },
+  adicionar(d) {
+    const id = (/linkedin\.com/i.test(d.link) && (String(d.link).match(/(\d{8,12})/) || [])[1]) || 'm' + Date.now();
+    demo.fila.unshift({ id, titulo: d.titulo, empresa: d.empresa, empresaOriginal: d.empresaOriginal || d.empresa, local: d.local,
+      modalidade: d.modalidade, jornada: d.jornada, beneficios: d.beneficios, publicada: '', link: d.link, conferida: !!d.conferida,
+      manual: true, aviso: '', logo: /linkedin/.test(d.link) ? demo.logo('UE', '#7A1026') : '' });
+  },
+  resumo() {
+    const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const areas = ['Administrativo', 'Vendas', 'Produção', 'Administrativo', 'Logística', 'Vendas', 'Saúde', 'Serviços gerais', 'Aprendiz/Estágio', 'Produção'];
+    const cidades = ['Araraquara', 'São Carlos', 'Araraquara', 'Matão', 'São Carlos', 'Taquaritinga'];
+    const modos = ['Presencial', 'Presencial', 'Presencial', 'Presencial', 'Home office', 'Presencial', 'Híbrido'];
+    const soma = (o, k) => { o[k] = (o[k] || 0) + 1; };
+    const hoje = new Date();
+    const dias = [];
+    for (let i = 1; i < 30; i++) {
+      const d = new Date(hoje); d.setDate(d.getDate() - i);
+      const n = d.getDay() === 0 ? 0 : d.getDay() === 6 ? 2 : 3 + (i * 7) % 5;
+      const e = { data: iso(d), n, a: {}, c: {}, m: {}, i: [] };
+      for (let k = 0; k < n; k++) { const x = i * 13 + k * 7; soma(e.a, areas[x % areas.length]); soma(e.c, cidades[x % cidades.length]); soma(e.m, modos[x % modos.length]); }
+      if (i === 1) e.i = [['09:20', 'Auxiliar de Produção', 'Empresa A', 'Matão/SP'], ['10:05', 'Vendedor(a) Interno', 'Lojas Exemplo', 'Araraquara/SP'],
+        ['11:45', 'Recepcionista', 'Clínica Exemplo', 'São Carlos/SP'], ['16:30', 'Auxiliar de Logística', 'Transportadora Exemplo', 'Taquaritinga/SP'],
+        ['17:10', 'Assistente Administrativo', 'Empresa B', 'Araraquara/SP'], ['17:40', 'Promotor(a) de Vendas', 'Empresa C', 'São Carlos/SP']].slice(0, n);
+      dias.push(e);
+    }
+    const doDia = { data: iso(hoje), n: 0, a: {}, c: {}, m: {}, i: [] };
+    [['09:12', 'Auxiliar Administrativo', 'Aticca', 'Araraquara/SP', 'Administrativo', 'Presencial'],
+      ['10:40', 'Operador(a) de Empilhadeira', 'Transportadora Exemplo', 'Matão/SP', 'Logística', 'Presencial']].concat(demo.envios)
+      .forEach((x) => { doDia.n++; soma(doDia.a, x[4] || 'Não informado'); soma(doDia.c, String(x[3] || 'Não informado').replace(/\/[A-Z]{2}$/, '')); soma(doDia.m, x[5] || 'Não informado'); doDia.i.push(x.slice(0, 4)); });
+    return { ok: true, hoje: iso(hoje), dias: [doDia].concat(dias) };
   },
   ajustes: { cidades: ['Matão', 'Araraquara', 'São Carlos', 'Taquaritinga'], maxDias: 15, msgCabecalho: '', msgChamada: '', msgRodape: '', arteSelo: '', arteChamada: '' },
   async chamar(acao, p) {
     await new Promise((r) => setTimeout(r, acao === 'buscar' ? 1200 : 150));
     if (acao === 'ajustes') return { ok: true, ajustes: demo.ajustes };
     if (acao === 'salvarAjustes') { demo.ajustes = JSON.parse(p.dados); return { ok: true, ajustes: demo.ajustes }; }
+    if (acao === 'resumo') return demo.resumo();
+    if (acao === 'lerLink') return demo.lerLink(p.link);
     if (!demo.fila) demo.fila = demo.inicial();
+    if (acao === 'adicionar') demo.adicionar(JSON.parse(p.dados));
+    if (acao === 'enviada') {
+      const h = new Date();
+      demo.envios.push([String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0'), p.titulo, p.empresa, p.cidade, p.area, p.modalidade]);
+    }
     if (acao === 'enviada' || acao === 'descartar') { demo.fila = demo.fila.filter((v) => v.id !== p.id); return { ok: true }; }
     const descartadas = [
       { id: '1', titulo: 'Analista de Qualidade', empresa: 'Empresa F', motivo: 'Não aceita mais candidaturas', link: 'https://www.linkedin.com/' },
