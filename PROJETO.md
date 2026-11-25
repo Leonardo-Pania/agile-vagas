@@ -18,7 +18,8 @@ O que o app faz:
 - busca as vagas sozinho todo dia, por volta das **11:30 e das 17:00**;
 - confere no LinkedIn se cada vaga ainda está aberta;
 - monta a **imagem** (1080×1350) e a **mensagem no padrão do grupo**;
-- a cliente revisa e envia **uma vaga por mensagem**, com um toque. O WhatsApp abre com a imagem e o texto prontos.
+- a cliente revisa e envia **uma vaga por mensagem**, com um toque. O WhatsApp abre com a imagem e o texto prontos;
+- ela também pode **adicionar uma vaga pelo link** (LinkedIn, Gupy, Indeed, site da empresa), filtrar por **área** e por **modalidade** (presencial, home office, híbrido) e ver o **resumo das enviadas**.
 
 Custo: **zero**. Usa Google Apps Script, GitHub Pages, alertas do LinkedIn e a busca pública do LinkedIn.
 
@@ -29,7 +30,7 @@ Custo: **zero**. Usa Google Apps Script, GitHub Pages, alertas do LinkedIn e a b
 | App (front-end) | `index.html` + `manifest.json` + ícones, neste repositório | Publicado pelo GitHub Pages em `https://leonardo-pania.github.io/agile-vagas/` |
 | Servidor (API) | Projeto do Google Apps Script **"Agile Consultoria - Vagas"**, na conta Google do Leonardo (a mesma do LinkedIn) | Cópia do código em `servidor/` |
 | ID do projeto Apps Script | `1Fu-FuuNIwq3xS9MM-VV4eb9Ql9VMGPdB5UZzC8t8KdMOCUa9XWlKUZhl` | Editor: `https://script.google.com/home/projects/<ID>/edit`. Só abre logado na conta dele |
-| Implantação | App da Web, versão 3 (18/11/2026). Executar como: **Eu**. Quem pode acessar: **Qualquer pessoa** | Para atualizar, crie uma **nova versão na mesma implantação** (a URL não muda) |
+| Implantação | App da Web, versão 4 (25/11/2026). Executar como: **Eu**. Quem pode acessar: **Qualquer pessoa** | Para atualizar, crie uma **nova versão na mesma implantação** (a URL não muda) |
 | Alertas do LinkedIn | Conta LinkedIn do Leonardo | Lista na seção 5 |
 | Gmail | Conta do Leonardo: marcador **"Vagas"** + filtro `from:jobalerts-noreply@linkedin.com` → Vagas (sem passar pela caixa de entrada) | Criado por `instalar()` |
 | Buscas automáticas | Gatilhos de horário do Apps Script: `buscaAutomatica` às 11:30 e às 17:00 (America/Sao_Paulo) | Recriar com `agendarBuscasAutomaticas()` |
@@ -58,7 +59,8 @@ Custo: **zero**. Usa Google Apps Script, GitHub Pages, alertas do LinkedIn e a b
 4. **Classificação** (`classificar_`) descarta:
    - vaga removida ou encerrada;
    - vaga com mais de 15 dias (configurável);
-   - vaga fora da região.
+   - vaga fora da região, **menos home office** do estado de SP ou do Brasil todo (`homeOfficeAceito_`, desliga com `CONFIG.HOME_OFFICE_DE_FORA = false`).
+   - Vaga adicionada pela cliente (`manual`) não passa pelo filtro de cidade nem de data de publicação; só sai se for removida, encerrada ou ficar mais de 15 dias na fila.
 5. **O que o app vê** (`montarResposta_`):
    - vaga conferida, ou vaga do e-mail com cidade conhecida;
    - vaga da busca direta só aparece **depois de conferida**. Antes disso entra na contagem `aguardando`.
@@ -72,8 +74,15 @@ Custo: **zero**. Usa Google Apps Script, GitHub Pages, alertas do LinkedIn e a b
 - `CHAVE`
 - `AGENDA`
 - `ultimaBusca`, `ultimaPesquisaDireta`, `ultimasDescartadas`, `linkedinLimitou`
+- `est_AAAA-MM-DD`: resumo das enviadas do dia `{n, a: {área: n}, c: {cidade: n}, m: {modalidade: n}, i: [[hora, cargo, empresa, cidade]]}`.
+  - Os números ficam 120 dias; a lista `i` (até 60 por dia) só fica 7 dias, para caber no limite. Quem limpa é `limparEstatisticas_`.
 
-**API (`doGet`, sempre com `chave`):** `acao` = `listar`, `buscar`, `enviada`, `descartar`, `ajustes` ou `salvarAjustes`.
+**API (`doGet`, sempre com `chave`):** `acao` =
+- `listar`, `buscar`, `enviada`, `descartar`, `ajustes`, `salvarAjustes`;
+- `lerLink` (`link`): lê uma vaga colada. Do LinkedIn usa `verificarUma_` (recusa removida/encerrada, avisa se já foi enviada ou é de fora); de outro site tenta `og:title`, `og:site_name` e benefícios;
+- `adicionar` (`dados` em JSON): põe a vaga na fila com `manual: true`. Id = id do LinkedIn ou `m<timestamp>` (`externa: true`, não é conferida no LinkedIn). Entra no topo da lista;
+- `resumo`: devolve os `est_` dos últimos 120 dias.
+- `enviada` agora recebe também `titulo`, `cidade`, `area` e `modalidade` para o resumo.
 
 ## 4. Mensagem (padrão definido pelo Leonardo; mantenha)
 
@@ -98,6 +107,7 @@ AGILE | Vagas e Conexões
 ```
 
 - As linhas sem informação somem: sem jornada não há ⏰, e sem benefícios não há 🎁.
+- Vaga **home office**: a linha do local vira `📍 Home office (<Cidade>/SP)`. Na imagem a modalidade aparece como "Home office".
 - **Benefícios:** `extrairBeneficios_` resume os mais comuns a partir de uma lista fixa (`BENEFICIOS_`), na ordem dela.
   - Exemplo real (Aticca): "Vale-alimentação, auxílio combustível, PLR, assistência médica e odontológica, TotalPass, Day Off de aniversário e refeitório."
   - A cliente pode editar na revisão.
@@ -132,7 +142,14 @@ Todos com frequência diária e aviso por e-mail e notificação. O LinkedIn man
 
 **Testes**
 - Servidor: `node servidor/teste-servidor.js`. Simula Gmail, LinkedIn, Propriedades e gatilhos, e precisa terminar com "Tudo certo.".
-- App: abra `index.html#demo` (modo demonstração, com dados de exemplo e sem servidor).
+- App: abra `index.html#demo` (modo demonstração, com dados de exemplo e sem servidor). A demonstração também simula adicionar vaga e o resumo das enviadas.
+
+**Telas do app** (cada uma cria um passo no histórico, então o "voltar" do Android volta para a lista)
+- **+** (Adicionar vaga): cola o link → "Buscar dados" (`lerLink`) → revisa cargo, empresa, cidade, modalidade, jornada e benefícios com prévia da imagem e da mensagem → "Adicionar à lista" (`adicionar`).
+- **Gráfico** (Vagas enviadas): totais de hoje, 7 e 30 dias; por dia, área, cidade e modalidade; lista das enviadas hoje e ontem.
+- **Engrenagem** (Configurações). Trocar de uma tela para outra não empilha passos.
+- **Conexão:** quando aparece "Chave inválida" (ou endereço errado), a lista mostra um campo para **colar o link de configuração**. O mesmo campo está no primeiro acesso e em Configurações → Conexão. O app lê `api=` e `chave=` do link colado.
+- **Filtro de modalidade** (Todas · Presencial · Home office · Híbrido), junto com o de área; os dois ficam guardados no celular. Anúncio que não cita a modalidade conta como **presencial** no filtro (é a maioria dos anúncios da região).
 
 ## 7. Riscos e limites conhecidos
 
@@ -186,13 +203,15 @@ Todos com frequência diária e aviso por e-mail e notificação. O LinkedIn man
 - [ ] Remover a primeira instalação, que ficou na conta Google da cliente (projeto Apps Script + filtro e marcador "Vagas" no Gmail). Precisa do login dela.
 - [ ] GitHub pediu verificação em duas etapas na conta Leonardo-Pania até 23/11/2026.
 - [ ] Pequeno: título todo em minúscula vindo do LinkedIn (ex.: "mecânico industrial") poderia ganhar a primeira letra maiúscula em `arrumarTitulo_`.
+- Feito em 25/11/2026: adicionar vaga pelo link, resumo das enviadas, filtro presencial/home office e conserto da conexão colando o link.
+  - O resumo das enviadas começa a contar em 25/11/2026 (antes não havia registro por área e cidade).
 - Ideias oferecidas e ainda não feitas:
-  - adicionar vaga manualmente (colar link de LinkedIn, Gupy, Indeed…);
   - filtro por cidade;
   - imagem no formato do Status do WhatsApp;
   - hashtags de área e cidade;
-  - histórico e relatório semanal;
-  - bloquear empresa ou palavra.
+  - relatório semanal por e-mail;
+  - bloquear empresa ou palavra;
+  - pesquisa específica de vagas home office (hoje só entram as que aparecem nas buscas das cidades).
 
 ## 10. Dicas para automatizar pelo navegador (para quem for mexer)
 
