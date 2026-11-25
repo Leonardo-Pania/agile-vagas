@@ -310,13 +310,13 @@ function htmlFiltros() {
 function lerHash() {
   const h = location.hash.replace(/^#/, '');
   if (!h) return;
-  if (h === 'demo') { estado.demo = true; return; }
+  if (h === 'demo') { estado.demo = true; history.replaceState(history.state, '', location.pathname + location.search); return; }
   const p = new URLSearchParams(h);
   if (p.get('api') && p.get('chave')) {
     estado.config = { api: p.get('api').trim(), chave: p.get('chave').trim() };
     armazenamento.gravar('vagas_config', estado.config);
     estado.demo = false;
-    history.replaceState(null, '', location.pathname + location.search);
+    history.replaceState(history.state, '', location.pathname + location.search);
   }
 }
 
@@ -1092,7 +1092,7 @@ function telaConfiguracoes(main) {
     e.preventDefault();
     fecharConfig(() => {
       estado.demo = false; estado.vagas = [];
-      history.replaceState(null, '', location.pathname); desenhar(); if (estado.config) carregarFila();
+      history.replaceState(history.state, '', location.pathname); desenhar(); if (estado.config) carregarFila();
     });
   };
   atualizarPreviaCfg();
@@ -1101,9 +1101,16 @@ function telaConfiguracoes(main) {
 // ------------------------- Navegação (botão "voltar" do celular) -------------------------
 // O app é uma página só. Cada tela "por cima" da lista (Configurações, revisão de uma vaga) cria um passo
 // no histórico; assim o "voltar" do Android volta para a tela anterior em vez de fechar o app.
+// Na lista, um passo "guarda" segura o primeiro "voltar": aparece "Aperte voltar de novo para sair" e,
+// se ela apertar de novo em até 2,5 s, o app fecha.
 let depoisDeVoltar = null;
+let tempoGuarda = null;
+const TEMPO_PARA_SAIR_MS = 2500;
+function colocarGuarda() {
+  if (!history.state) history.pushState({ tela: 'guarda' }, '');
+}
 function voltarEntao(fn) {
-  if (history.state && history.state.tela) { depoisDeVoltar = fn || null; history.back(); }
+  if (history.state && history.state.tela && history.state.tela !== 'guarda') { depoisDeVoltar = fn || null; history.back(); }
   else if (fn) fn();
 }
 function abrirConfig() {
@@ -1129,11 +1136,20 @@ function fecharVaga() {
 }
 window.addEventListener('popstate', (e) => {
   const passo = e.state || {};
+  const estavaNaLista = !estado.telaConfig && !estado.aberta;
   estado.telaConfig = passo.tela === 'config';
   if (!estado.telaConfig) estado.rascunho = null;
   if (passo.tela === 'vaga') estado.aberta = estado.vagas.some((v) => v.id === passo.id) ? passo.id : null;
   else if (passo.tela !== 'config') estado.aberta = null;
   desenhar();
+  if (!e.state) {
+    // chegou no começo do histórico: o próximo "voltar" fecha o app
+    clearTimeout(tempoGuarda);
+    if (estavaNaLista) {
+      aviso('Aperte voltar de novo para sair');
+      tempoGuarda = setTimeout(colocarGuarda, TEMPO_PARA_SAIR_MS);
+    } else colocarGuarda();
+  }
   if (depoisDeVoltar) { const fn = depoisDeVoltar; depoisDeVoltar = null; fn(); }
 });
 
@@ -1227,6 +1243,9 @@ const demo = {
   setTimeout(fechar, AJUSTES.TEMPO_ABERTURA_MS);
 })();
 lerHash();
+// começa sempre na lista: troca um passo que tenha sobrado de antes (recarregar a página) pela "guarda"
+if (history.state && history.state.tela !== 'guarda') history.replaceState({ tela: 'guarda' }, '');
+colocarGuarda();
 desenhar();
 if (estado.demo || (estado.config && estado.config.api)) carregarFila();
 </script>
