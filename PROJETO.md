@@ -154,6 +154,21 @@ Todos com frequência diária e aviso por e-mail e notificação. O LinkedIn man
 - Grupo **não é só de TI**: priorizar vagas de todas as áreas.
 - Uma vaga por mensagem. Envio manual com tela de revisão. Celular Android.
 - **Imagem da vaga:** a logo da empresa contratante é a principal, e a logo da **Agile Consultoria** (vinho e dourado) é secundária.
+- **Paleta escolhida pela cliente (25/11/2026), usada no app e na imagem:**
+
+  | Cor | Hex |
+  |---|---|
+  | Vinho | `#7A1026` |
+  | Dourado | `#B7892B` |
+  | Creme | `#F3E2C7` |
+  | Marrom | `#2B1B1F` |
+  | Rosé | `#CAA1A7` |
+
+  - A **imagem da vaga tem fundo claro** (creme), porque ela pediu um fundo neutro para facilitar a leitura.
+    - Cargo, selo "VAGA ABERTA" e botão em vinho; textos em marrom; detalhes em dourado e rosé.
+    - Para voltar ao fundo vinho, mude `AJUSTES.ARTE_CLARA` para `false` no `index.html`.
+  - O **app também é claro**: topo creme com o nome em vinho, botão "Buscar" em vinho e fundo creme bem claro.
+  - O botão "Enviar" continua verde, na cor do WhatsApp.
 - **App:** nome "Agile Consultoria".
 - **Abertura de 5 s:**
   - fundo todo preto;
