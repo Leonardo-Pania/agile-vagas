@@ -11,8 +11,10 @@
 <title>Agile Consultoria</title>
 <style>
   :root {
-    --marca: #6b0f2b; --marca-2: #8e1b3e; --destaque: #e2b65a; --marca-suave: #f7ecf0; --verde: #128c4b; --verde-escuro: #0d6e3a;
-    --fundo: #f2f4f7; --cartao: #ffffff; --texto: #17202b; --suave: #5f6b7a; --borda: #dfe4eb;
+    /* Paleta escolhida pela cliente: vinho #7A1026, dourado #B7892B, creme #F3E2C7, marrom #2B1B1F, rosé #CAA1A7 */
+    --marca: #7A1026; --marca-2: #94203A; --destaque: #B7892B; --marca-suave: #F6EAEC; --verde: #128c4b; --verde-escuro: #0d6e3a;
+    --fundo: #FCF8F2; --cartao: #ffffff; --texto: #2B1B1F; --suave: #6E5A5E; --borda: #EADDD3;
+    --topo-1: #FFFBF4; --topo-2: #F3E2C7; --rose: #CAA1A7;
     --alerta: #9a5b00; --alerta-fundo: #fff4d6; --ok: #11743f; --ok-fundo: #e3f5ea; --perigo: #b42318;
     --raio: 14px;
   }
@@ -26,20 +28,21 @@
   .oculto { display: none !important; }
   .pagina { max-width: 560px; margin: 0 auto; padding: 0 14px; }
 
-  header.topo { background: linear-gradient(135deg, #4a0a1f, #7a1435); color: #fff; padding: 14px 0 16px;
+  header.topo { background: linear-gradient(160deg, var(--topo-1), var(--topo-2)); color: var(--marca); padding: 14px 0 16px;
+    border-bottom: 1px solid #E8D5BC;
     padding-top: calc(14px + env(safe-area-inset-top)); }
   .topo .linha { display: flex; align-items: center; gap: 12px; }
   .topo h1 { font-size: 20px; margin: 0; flex: 1; letter-spacing: .2px; }
-  .topo .sub { color: #f1cbd6; font-size: 13px; margin-top: 2px; }
-  .icone-btn { background: rgba(255,255,255,.12); border: 0; border-radius: 10px; width: 40px; height: 40px;
-    display: grid; place-items: center; color: #fff; }
+  .topo .sub { color: var(--suave); font-size: 13px; margin-top: 2px; }
+  .icone-btn { background: rgba(122,16,38,.08); border: 0; border-radius: 10px; width: 40px; height: 40px;
+    display: grid; place-items: center; color: var(--marca); }
   .icone-btn svg { width: 22px; height: 22px; }
 
   .btn { border: 0; border-radius: 12px; padding: 13px 16px; font-weight: 650; display: inline-flex;
     align-items: center; justify-content: center; gap: 8px; min-height: 48px; }
   .btn:disabled { opacity: .55; cursor: default; }
-  .btn-primario { background: linear-gradient(90deg, #c99a3e, #f2d488, #c99a3e); color: #4a0a1f; width: 100%; margin-top: 14px; font-size: 17px; }
-  .btn-claro { background: #f3eef0; color: var(--marca); }
+  .btn-primario { background: var(--marca); color: #FFF4E3; box-shadow: 0 4px 12px rgba(122,16,38,.18); width: 100%; margin-top: 14px; font-size: 17px; }
+  .btn-claro { background: var(--marca-suave); color: var(--marca); }
   .btn-perigo-claro { background: #fdecea; color: var(--perigo); }
   .btn-verde { background: var(--verde); color: #fff; }
   .btn-pequeno { min-height: 40px; padding: 8px 14px; font-size: 15px; border-radius: 10px; }
@@ -59,7 +62,7 @@
     margin-bottom: 12px; overflow: hidden; transition: opacity .25s, transform .25s; }
   .cartao.saindo { opacity: 0; transform: translateX(40px); }
   .cartao .resumo { display: flex; gap: 12px; padding: 12px; align-items: flex-start; }
-  .miniatura { width: 68px; height: 85px; border-radius: 10px; flex: none; background: #eadde2 center/cover; }
+  .miniatura { width: 68px; height: 85px; border-radius: 10px; flex: none; background: #EFE2E4 center/cover; }
   .cartao .info { flex: 1; min-width: 0; }
   .cartao .titulo { font-weight: 700; font-size: 16.5px; line-height: 1.25;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -69,19 +72,20 @@
   .selo { font-size: 12.5px; font-weight: 650; border-radius: 999px; padding: 3px 9px; }
   .selo.ok { background: var(--ok-fundo); color: var(--ok); }
   .selo.alerta { background: var(--alerta-fundo); color: var(--alerta); }
-  .selo.neutro { background: #eef1f5; color: var(--suave); }
+  .selo.neutro { background: #F2E9E2; color: var(--suave); }
   .cartao .acoes { display: flex; gap: 8px; padding: 0 12px 12px; }
   .cartao .acoes .btn { flex: 1; }
   .ordem { font-size: 12px; font-weight: 700; color: var(--marca); background: var(--marca-suave); border-radius: 6px;
     padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
 
   .editor { border-top: 1px solid var(--borda); padding: 14px 12px; background: #fafbfd; }
-  .editor img.arte { width: 100%; border-radius: 12px; display: block; background: #eadde2; aspect-ratio: 4 / 5; }
+  .editor img.arte { width: 100%; border-radius: 12px; display: block; background: #EFE2E4; aspect-ratio: 4 / 5; }
   .campo { margin-top: 12px; }
   .campo label { display: block; font-size: 13px; font-weight: 650; color: var(--suave); margin-bottom: 4px; }
-  .campo input, .campo select { width: 100%; border: 1px solid var(--borda); border-radius: 10px;
+  .campo input, .campo select, .campo textarea { width: 100%; border: 1px solid var(--borda); border-radius: 10px;
     padding: 11px 12px; background: #fff; min-height: 46px; }
-  .campo input:focus, .campo select:focus { outline: 2px solid var(--marca-2); outline-offset: 0; border-color: transparent; }
+  .campo textarea { font: inherit; line-height: 1.4; resize: vertical; }
+  .campo input:focus, .campo select:focus, .campo textarea:focus { outline: 2px solid var(--marca-2); outline-offset: 0; border-color: transparent; }
   .campo .dica { font-size: 12.5px; color: var(--suave); margin-top: 4px; }
   .duas { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
   .previa { white-space: pre-wrap; background: #e7f5ec; border-radius: 10px; padding: 12px; font-size: 14.5px;
@@ -100,7 +104,7 @@
   .vazio strong { color: var(--texto); display: block; font-size: 17px; margin-bottom: 4px; }
 
   .barra-envio { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--borda);
-    padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 18px rgba(74,10,31,.08); }
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 18px rgba(122,16,38,.08); }
   .barra-envio .pagina { padding: 0; }
   .barra-envio .btn { width: 100%; font-size: 18px; min-height: 56px; }
   .barra-envio .legenda { text-align: center; font-size: 12.5px; color: var(--suave); margin-top: 6px; }
@@ -153,13 +157,13 @@
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--marca-suave); color: var(--marca);
     border-radius: 999px; padding: 6px 6px 6px 13px; font-weight: 650; font-size: 15px; }
-  .chip button { border: 0; background: rgba(107,15,43,.12); color: var(--marca); width: 26px; height: 26px;
+  .chip button { border: 0; background: rgba(122,16,38,.12); color: var(--marca); width: 26px; height: 26px;
     border-radius: 50%; font-size: 15px; line-height: 1; display: grid; place-items: center; }
   .linha-add { display: flex; gap: 8px; margin-top: 10px; }
   .linha-add input { flex: 1; min-width: 0; border: 1px solid var(--borda); border-radius: 10px; padding: 11px 12px; min-height: 46px; }
   .linha-dias { display: flex; align-items: center; gap: 10px; }
   .linha-dias input { width: 90px !important; text-align: center; }
-  .config img.previa-cfg { width: 62%; display: block; margin: 12px auto 0; border-radius: 12px; aspect-ratio: 4 / 5; background: #eadde2; }
+  .config img.previa-cfg { width: 62%; display: block; margin: 12px auto 0; border-radius: 12px; aspect-ratio: 4 / 5; background: #EFE2E4; }
   .filtros { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; margin: 0 -2px; scrollbar-width: none; }
   .filtros::-webkit-scrollbar { display: none; }
   .filtro { flex: none; border: 1px solid var(--borda); background: #fff; color: var(--texto); border-radius: 999px;
@@ -211,13 +215,17 @@ const AJUSTES = {
   CHAMADA_MSG: 'Interessados podem conferir os requisitos e realizar a candidatura diretamente pelo link:',
   RODAPE_MSG: 'Compartilhe com quem possa ter interesse! 🤝\n\nAGILE | Vagas e Conexões',
   // Arte (cores da Agile)
-  COR_FUNDO: '#3d0716',
-  COR_FUNDO_2: '#7a1334',
+  COR_FUNDO: '#3A0C17',
+  COR_FUNDO_2: '#7A1026',
   OURO_1: '#b8893a',
   OURO_2: '#f2d27e',
   OURO_3: '#c4923f',
-  COR_SOBRE_OURO: '#4a0a1f',
+  COR_SOBRE_OURO: '#2B1B1F',
   COR_EMPRESA: '#f3d48a',
+  // Arte clara (pedido da cliente: fundo neutro para facilitar a leitura). false = volta ao fundo vinho
+  ARTE_CLARA: true,
+  CLARA: { CREME: '#F3E2C7', CREME_TOPO: '#FBF5EA', VINHO: '#7A1026', TEXTO: '#2B1B1F', ROSE: '#CAA1A7',
+    OURO: ['#9C7320', '#D9AE47', '#B7892B'], SOBRE_VINHO: '#FFF4E3' },
   SELO_ARTE: 'VAGA ABERTA',
   CHAMADA_ARTE: 'Acesse o link e candidate-se!',
   TEMPO_ABERTURA_MS: 5000,      // abertura da Pania Company: 2 s surgindo + 3 s brilho e barra
@@ -539,22 +547,42 @@ async function desenharArte(v, ajustesArte) {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');
+  const clara = A.ARTE_CLARA !== false && !!A.CLARA;
+  const K = A.CLARA || {};
+  const tonsOuro = clara ? K.OURO : [A.OURO_1, A.OURO_2, A.OURO_3];
   const ouro = (x0, x1) => {
     const gr = g.createLinearGradient(x0, 0, x1, 0);
-    gr.addColorStop(0, A.OURO_1); gr.addColorStop(0.5, A.OURO_2); gr.addColorStop(1, A.OURO_3);
+    gr.addColorStop(0, tonsOuro[0]); gr.addColorStop(0.5, tonsOuro[1]); gr.addColorStop(1, tonsOuro[2]);
     return gr;
   };
+  // cores de cada parte (fundo claro ou fundo vinho)
+  const C = clara
+    ? { titulo: K.VINHO, empresa: K.TEXTO, info: K.TEXTO, icone: K.OURO[2], furoIcone: K.CREME_TOPO,
+        selo: K.VINHO, textoSelo: K.SOBRE_VINHO, botao: K.VINHO, textoBotao: K.SOBRE_VINHO, iniciais: K.VINHO }
+    : { titulo: '#fff', empresa: A.COR_EMPRESA, info: '#fff', icone: A.OURO_2, furoIcone: A.COR_FUNDO_2,
+        selo: null, textoSelo: A.COR_SOBRE_OURO, botao: null, textoBotao: A.COR_SOBRE_OURO, iniciais: A.COR_FUNDO_2 };
 
-  // fundo vinho com brilho suave
-  const fundo = g.createLinearGradient(0, 0, W, H);
-  fundo.addColorStop(0, A.COR_FUNDO); fundo.addColorStop(1, A.COR_FUNDO_2);
-  g.fillStyle = fundo; g.fillRect(0, 0, W, H);
-  const brilho = g.createRadialGradient(W * 0.86, 130, 10, W * 0.86, 130, 620);
-  brilho.addColorStop(0, 'rgba(255,255,255,0.11)'); brilho.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = brilho; g.fillRect(0, 0, W, H);
-  const brilho2 = g.createRadialGradient(0, H - 260, 10, 0, H - 260, 460);
-  brilho2.addColorStop(0, 'rgba(244,214,136,0.10)'); brilho2.addColorStop(1, 'rgba(244,214,136,0)');
-  g.fillStyle = brilho2; g.fillRect(0, 0, W, H);
+  if (clara) {
+    // fundo creme, neutro para facilitar a leitura, com detalhes discretos em rosé e dourado
+    const fundo = g.createLinearGradient(0, 0, 0, H);
+    fundo.addColorStop(0, K.CREME_TOPO); fundo.addColorStop(1, K.CREME);
+    g.fillStyle = fundo; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(202,161,167,0.28)';
+    g.beginPath(); g.arc(W + 30, -60, 400, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(183,137,43,0.12)';
+    g.beginPath(); g.arc(-120, H - 330, 300, 0, Math.PI * 2); g.fill();
+  } else {
+    // fundo vinho com brilho suave
+    const fundo = g.createLinearGradient(0, 0, W, H);
+    fundo.addColorStop(0, A.COR_FUNDO); fundo.addColorStop(1, A.COR_FUNDO_2);
+    g.fillStyle = fundo; g.fillRect(0, 0, W, H);
+    const brilho = g.createRadialGradient(W * 0.86, 130, 10, W * 0.86, 130, 620);
+    brilho.addColorStop(0, 'rgba(255,255,255,0.11)'); brilho.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = brilho; g.fillRect(0, 0, W, H);
+    const brilho2 = g.createRadialGradient(0, H - 260, 10, 0, H - 260, 460);
+    brilho2.addColorStop(0, 'rgba(244,214,136,0.10)'); brilho2.addColorStop(1, 'rgba(244,214,136,0)');
+    g.fillStyle = brilho2; g.fillRect(0, 0, W, H);
+  }
 
   // rodapé branco com a logo da Agile (quem divulga)
   const hRod = 184, yRod = H - hRod;
@@ -569,7 +597,7 @@ async function desenharArte(v, ajustesArte) {
   // logo da empresa contratante (destaque)
   const L = 232, yL = 80;
   g.save();
-  g.shadowColor = 'rgba(0,0,0,0.35)'; g.shadowBlur = 30; g.shadowOffsetY = 10;
+  g.shadowColor = clara ? 'rgba(43,27,31,0.16)' : 'rgba(0,0,0,0.35)'; g.shadowBlur = 30; g.shadowOffsetY = 10;
   g.fillStyle = '#fff'; retanguloRedondo(g, M, yL, L, L, 40); g.fill();
   g.restore();
   g.strokeStyle = ouro(M, M + L); g.lineWidth = 5; retanguloRedondo(g, M, yL, L, L, 40); g.stroke();
@@ -582,7 +610,7 @@ async function desenharArte(v, ajustesArte) {
     g.drawImage(logo, M + (L - w) / 2, yL + (L - h) / 2, w, h);
     g.restore();
   } else {
-    g.fillStyle = A.COR_FUNDO_2; g.font = `800 96px ${FONTE}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = C.iniciais; g.font = `800 96px ${FONTE}`; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(iniciais(v.empresa), M + L / 2, yL + L / 2 + 6);
   }
 
@@ -591,8 +619,8 @@ async function desenharArte(v, ajustesArte) {
   const selo = A.SELO_ARTE;
   const ws = g.measureText(selo).width + 88, hs = 104;
   const xs = W - M - ws, ys = yL + (L - hs) / 2;
-  g.fillStyle = ouro(xs, xs + ws); retanguloRedondo(g, xs, ys, ws, hs, hs / 2); g.fill();
-  g.fillStyle = A.COR_SOBRE_OURO; g.fillText(selo, xs + ws / 2, ys + hs / 2 + 2);
+  g.fillStyle = C.selo || ouro(xs, xs + ws); retanguloRedondo(g, xs, ys, ws, hs, hs / 2); g.fill();
+  g.fillStyle = C.textoSelo; g.fillText(selo, xs + ws / 2, ys + hs / 2 + 2);
 
   // arco dourado (inspirado no traço da logo da Agile)
   const yArco = yL + L + 58;
@@ -634,13 +662,13 @@ async function desenharArte(v, ajustesArte) {
 
   // título
   let y = topo;
-  g.fillStyle = '#fff'; g.textBaseline = 'top';
+  g.fillStyle = C.titulo; g.textBaseline = 'top';
   linhasTitulo.forEach((linha) => { g.fillText(linha, M, y); y += tam * 1.1; });
 
   // empresa
   if (linhasEmpresa.length) {
     y += 18;
-    g.font = `600 48px ${FONTE}`; g.fillStyle = A.COR_EMPRESA;
+    g.font = `600 48px ${FONTE}`; g.fillStyle = C.empresa;
     linhasEmpresa.forEach((linha) => { g.fillText(linha, M, y); y += 58; });
   }
 
@@ -650,18 +678,18 @@ async function desenharArte(v, ajustesArte) {
     g.font = `500 44px ${FONTE}`; g.textBaseline = 'middle';
     linhasInfo.forEach(([icone, texto]) => {
       const s = 44, iy = y + 6;
-      if (icone === 'local') iconeLocal(g, M, iy, s, A.OURO_2, A.COR_FUNDO_2);
-      if (icone === 'maleta') iconeMaleta(g, M, iy, s, A.OURO_2);
-      if (icone === 'relogio') iconeRelogio(g, M, iy, s, A.OURO_2);
-      g.fillStyle = '#fff';
+      if (icone === 'local') iconeLocal(g, M, iy, s, C.icone, C.furoIcone);
+      if (icone === 'maleta') iconeMaleta(g, M, iy, s, C.icone);
+      if (icone === 'relogio') iconeRelogio(g, M, iy, s, C.icone);
+      g.fillStyle = C.info;
       g.fillText(limitarLinhas(g, [texto], 1, LARG - 76)[0], M + 76, iy + s / 2 + 2);
       y += 62;
     });
   }
 
   // botão "Acesse o link"
-  g.fillStyle = ouro(M, W - M); retanguloRedondo(g, M, yb, LARG, hb, hb / 2); g.fill();
-  g.fillStyle = A.COR_SOBRE_OURO; g.font = `800 52px ${FONTE}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = C.botao || ouro(M, W - M); retanguloRedondo(g, M, yb, LARG, hb, hb / 2); g.fill();
+  g.fillStyle = C.textoBotao; g.font = `800 52px ${FONTE}`; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillText(limitarLinhas(g, [A.CHAMADA_ARTE], 1, LARG - 60)[0], W / 2, yb + hb / 2 + 2);
 
   return new Promise((ok) => c.toBlob(ok, 'image/png'));
@@ -816,7 +844,7 @@ function htmlCartao(v, i) {
       <div class="campo"><label for="f-jornada-${v.id}">Jornada</label>
         <input id="f-jornada-${v.id}" data-campo="jornada" data-id="${v.id}" value="${esc(v.jornada)}" list="jornadas" placeholder="Tempo integral"></div>
       <div class="campo"><label for="f-beneficios-${v.id}">Benefícios</label>
-        <textarea id="f-beneficios-${v.id}" data-campo="beneficios" data-id="${v.id}" rows="3" placeholder="Ex.: Vale-alimentação, PLR e assistência médica">${esc(v.beneficios || '')}</textarea>
+        <textarea id="f-beneficios-${v.id}" data-campo="beneficios" data-id="${v.id}" rows="4" placeholder="Ex.: Vale-alimentação, PLR e assistência médica">${esc(v.beneficios || '')}</textarea>
         <div class="dica">O app resume os benefícios do anúncio. Confira e ajuste se quiser. Vazio = a linha 🎁 não aparece.</div></div>
       <div class="campo"><label for="f-link-${v.id}">Link de candidatura</label>
         <input id="f-link-${v.id}" data-campo="linkCandidatura" data-id="${v.id}" value="${esc(v.linkCandidatura || '')}" placeholder="${esc(v.link)}" inputmode="url">
@@ -1157,7 +1185,7 @@ const demo = {
   let fechada = false;
   const tema = document.querySelector('meta[name="theme-color"]');
   // durante a abertura a barra do celular fica preta; depois volta ao vinho do app
-  const fechar = () => { if (fechada) return; fechada = true; el.classList.add('saindo'); if (tema) tema.content = '#4a0a1f'; setTimeout(() => el.remove(), 550); };
+  const fechar = () => { if (fechada) return; fechada = true; el.classList.add('saindo'); if (tema) tema.content = '#FFFBF4'; setTimeout(() => el.remove(), 550); };
   el.addEventListener('click', fechar);
   setTimeout(fechar, AJUSTES.TEMPO_ABERTURA_MS);
 })();
