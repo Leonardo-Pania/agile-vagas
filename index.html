@@ -761,6 +761,7 @@ function removerDaTela(id, depois) {
   const tirar = () => {
     estado.vagas = estado.vagas.filter((x) => x.id !== id);
     if (estado.aberta === id) estado.aberta = null;
+    if (history.state && history.state.tela === 'vaga' && history.state.id === id) history.back();
     desenhar();
     if (depois) depois();
   };
@@ -959,7 +960,7 @@ function salvarConexao() {
   if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(api)) { aviso('O endereço precisa começar com https://script.google.com e terminar em /exec'); return; }
   if (!chave) { aviso('Falta a chave.'); return; }
   estado.config = { api, chave }; armazenamento.gravar('vagas_config', estado.config);
-  estado.demo = false; estado.telaConfig = false; desenhar(); carregarFila();
+  estado.demo = false; fecharConfig(() => carregarFila());
 }
 
 function telaConexao(main) {
@@ -1070,7 +1071,7 @@ function telaConfiguracoes(main) {
   main.querySelectorAll('[data-rascunho]').forEach((el) => {
     el.oninput = () => { r[el.dataset.rascunho] = el.value; if (/^arte/.test(el.dataset.rascunho)) atualizarPreviaCfg(); };
   });
-  $('cfgVoltar').onclick = () => { estado.telaConfig = false; estado.rascunho = null; desenhar(); };
+  $('cfgVoltar').onclick = () => fecharConfig();
   $('cfgSalvarAjustes').onclick = async () => {
     if (!r.cidades.length) { aviso('Deixe pelo menos uma cidade.'); return; }
     const dias = Math.round(Number(r.maxDias));
@@ -1080,9 +1081,7 @@ function telaConfiguracoes(main) {
     try {
       const resp = await chamar('salvarAjustes', { dados: JSON.stringify(Object.assign({}, r, { maxDias: dias })) });
       aplicarAjustes(resp.ajustes);
-      estado.telaConfig = false; estado.rascunho = null;
-      desenhar();
-      aviso('Configurações salvas ✓');
+      fecharConfig(() => aviso('Configurações salvas ✓'));
     } catch (e) {
       botao.disabled = false; botao.textContent = 'Salvar';
       aviso('Não deu para salvar: ' + e.message);
@@ -1090,28 +1089,67 @@ function telaConfiguracoes(main) {
   };
   if ($('cfgSalvarConexao')) $('cfgSalvarConexao').onclick = salvarConexao;
   if ($('cfgSairDemo')) $('cfgSairDemo').onclick = (e) => {
-    e.preventDefault(); estado.demo = false; estado.telaConfig = false; estado.rascunho = null; estado.vagas = [];
-    history.replaceState(null, '', location.pathname); desenhar(); if (estado.config) carregarFila();
+    e.preventDefault();
+    fecharConfig(() => {
+      estado.demo = false; estado.vagas = [];
+      history.replaceState(null, '', location.pathname); desenhar(); if (estado.config) carregarFila();
+    });
   };
   atualizarPreviaCfg();
 }
+
+// ------------------------- Navegação (botão "voltar" do celular) -------------------------
+// O app é uma página só. Cada tela "por cima" da lista (Configurações, revisão de uma vaga) cria um passo
+// no histórico; assim o "voltar" do Android volta para a tela anterior em vez de fechar o app.
+let depoisDeVoltar = null;
+function voltarEntao(fn) {
+  if (history.state && history.state.tela) { depoisDeVoltar = fn || null; history.back(); }
+  else if (fn) fn();
+}
+function abrirConfig() {
+  estado.telaConfig = true; estado.rascunho = null;
+  history.pushState({ tela: 'config' }, '');
+  desenhar(); window.scrollTo(0, 0);
+}
+function fecharConfig(depois) {
+  if (history.state && history.state.tela === 'config') { voltarEntao(depois); return; }
+  estado.telaConfig = false; estado.rascunho = null; desenhar();
+  if (depois) depois();
+}
+function abrirVaga(id) {
+  const passo = { tela: 'vaga', id };
+  if (history.state && history.state.tela === 'vaga') history.replaceState(passo, ''); else history.pushState(passo, '');
+  estado.aberta = id; desenhar();
+  const el = document.querySelector(`[data-cartao="${id}"]`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function fecharVaga() {
+  if (history.state && history.state.tela === 'vaga') { history.back(); return; }
+  estado.aberta = null; desenhar();
+}
+window.addEventListener('popstate', (e) => {
+  const passo = e.state || {};
+  estado.telaConfig = passo.tela === 'config';
+  if (!estado.telaConfig) estado.rascunho = null;
+  if (passo.tela === 'vaga') estado.aberta = estado.vagas.some((v) => v.id === passo.id) ? passo.id : null;
+  else if (passo.tela !== 'config') estado.aberta = null;
+  desenhar();
+  if (depoisDeVoltar) { const fn = depoisDeVoltar; depoisDeVoltar = null; fn(); }
+});
 
 // ------------------------- Eventos -------------------------
 document.addEventListener('click', (e) => {
   const f = e.target.closest('[data-area]');
   if (f) {
-    estado.filtroArea = f.dataset.area; estado.aberta = null;
+    estado.filtroArea = f.dataset.area;
     armazenamento.gravar('vagas_filtro_area', estado.filtroArea);
-    desenhar();
+    if (estado.aberta) fecharVaga(); else desenhar();
     return;
   }
   const t = e.target.closest('[data-abrir],[data-descartar],[data-enviar]');
   if (!t) return;
   if (t.dataset.abrir) {
-    estado.aberta = estado.aberta === t.dataset.abrir ? null : t.dataset.abrir;
-    desenhar();
-    const el = document.querySelector(`[data-cartao="${t.dataset.abrir}"]`);
-    if (el && estado.aberta) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (estado.aberta === t.dataset.abrir) fecharVaga(); else abrirVaga(t.dataset.abrir);
   }
   if (t.dataset.descartar) descartar(t.dataset.descartar);
   if (t.dataset.enviar) enviar(t.dataset.enviar);
@@ -1128,8 +1166,7 @@ $('btnBuscar').onclick = buscar;
 $('btnEnviarProxima').onclick = () => { const v = vagasVisiveis()[0]; if (v) enviar(v.id); };
 $('btnConfig').onclick = () => {
   if (!estado.demo && !(estado.config && estado.config.api)) return;
-  estado.telaConfig = !estado.telaConfig; estado.rascunho = null; desenhar();
-  window.scrollTo(0, 0);
+  if (estado.telaConfig) fecharConfig(); else abrirConfig();
 };
 window.addEventListener('hashchange', () => { lerHash(); desenhar(); carregarFila(); });
 
