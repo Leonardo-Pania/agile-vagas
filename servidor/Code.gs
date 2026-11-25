@@ -37,6 +37,9 @@ const CONFIG = {
   TEMPO_MAXIMO_MS: 270000,               // para antes do limite de 6 minutos do Google
   // Buscas automáticas (horário de Brasília). Depois de mudar, rode agendarBuscasAutomaticas()
   HORARIOS_AUTOMATICOS: [[11, 30], [17, 0]],
+  // Vaga home office serve para quem mora nas cidades do grupo mesmo sendo de outra cidade
+  // (aceita se for do estado de SP ou do Brasil todo). false = só vagas das cidades do grupo.
+  HOME_OFFICE_DE_FORA: true,
 };
 // ===================================================
 
@@ -123,6 +126,12 @@ function doGet(e) {
         return json_({ ok: true, ajustes: ajustes_() });
       case 'salvarAjustes':
         return json_({ ok: true, ajustes: salvarAjustes_(p.dados) });
+      case 'lerLink':
+        return json_(lerLink_(p.link));
+      case 'adicionar':
+        return json_(adicionar_(p.dados));
+      case 'resumo':
+        return json_(resumo_());
       default:
         return json_({ ok: false, erro: 'Ação desconhecida: ' + p.acao });
     }
@@ -280,6 +289,7 @@ function buscar_(opcoes) {
     const fila = lerFila_(todas);
     const agora = Date.now();
     const conferir = fila.filter(function (v) {
+      if (v.externa) return false; // vaga de outro site: não dá para conferir no LinkedIn
       return v.status !== 'ok' || !v.verificadaEm ||
         agora - v.verificadaEm > CONFIG.REVERIFICAR_APOS_HORAS * 3600 * 1000;
     }).slice(0, opcoes.automatica ? CONFIG.MAX_VERIFICACOES_AUTOMATICA : CONFIG.MAX_VERIFICACOES_POR_BUSCA);
@@ -353,7 +363,7 @@ function lerEmails_(todas) {
         const titulo = arrumarTitulo_(doHtml.titulo || info.titulo || '');
         const loc = analisarLocal_(info.local);
         // o próprio e-mail já diz que a vaga é de outra cidade: descarta sem gastar consulta ao LinkedIn
-        if (loc.texto && !loc.atendida && loc.pareceLocal) {
+        if (loc.texto && !loc.atendida && loc.pareceLocal && !homeOfficeAceito_(loc)) {
           foraDaRegiao.push({ id: id, titulo: titulo || '(sem título)', empresa: arrumarEmpresa_(info.empresa || ''),
             local: loc.texto, motivo: 'Fora da região (' + loc.texto + ')',
             link: 'https://www.linkedin.com/jobs/view/' + id + '/' });
@@ -461,6 +471,164 @@ function infoDoHtml_(html, id) {
 }
 
 // ---------------------------------------------------------------------------
+// Vaga adicionada pela cliente (ela cola o link)
+// ---------------------------------------------------------------------------
+function idLinkedIn_(link) {
+  const s = String(link || '');
+  if (!/linkedin\.com/i.test(s)) return '';
+  return pegar_(s, /currentJobId=(\d{6,12})/) || pegar_(s, /jobs\/view\/(?:[^\/?#]*?-)?(\d{6,12})(?:[\/?#]|$)/) ||
+    pegar_(s, /jobPosting:(\d{6,12})/);
+}
+
+function lerLink_(link) {
+  link = String(link || '').trim();
+  if (!/^https?:\/\/\S+$/i.test(link)) return { ok: false, erro: 'Cole um link que comece com https://' };
+  const props = PropertiesService.getScriptProperties();
+  const id = idLinkedIn_(link);
+  const avisos = [];
+  if (id) {
+    if (props.getProperty('p_' + id)) return { ok: false, erro: 'Essa vaga já está na lista para enviar.' };
+    const hist = props.getProperty('v_' + id);
+    if (hist && hist.charAt(0) === 'e') {
+      avisos.push('Essa vaga já foi enviada no dia ' + Utilities.formatDate(new Date(Number(hist.split('|')[1])), FUSO, 'dd/MM') + '.');
+    }
+    const r = verificarUma_(id);
+    if (r.status === 'removida') return { ok: false, erro: 'Essa vaga foi removida do LinkedIn.' };
+    if (r.status === 'encerrada') return { ok: false, erro: 'Essa vaga não aceita mais candidaturas.' };
+    const base = { ok: true, linkedin: true, id: id, link: 'https://www.linkedin.com/jobs/view/' + id + '/' };
+    if (r.status !== 'ok') {
+      avisos.push('O LinkedIn não respondeu agora. Preencha os dados abaixo; a vaga é conferida na próxima busca.');
+      return Object.assign(base, { conferida: false, aviso: avisos.join(' ') });
+    }
+    const loc = analisarLocal_(r.localBruto);
+    if (loc.texto && !loc.atendida) avisos.push('Atenção: a vaga é de ' + loc.texto + ', fora das cidades do grupo.');
+    const empresa = arrumarEmpresa_(r.empresa);
+    const apelido = props.getProperty('a_' + chaveEmpresa_(empresa));
+    const logo = r.logoUrl ? logosEmBase64_([{ id: id, logoUrl: r.logoUrl }])[id] || '' : '';
+    return Object.assign(base, {
+      conferida: true, titulo: arrumarTitulo_(r.titulo), empresa: apelido || empresa, empresaOriginal: empresa,
+      local: loc.texto || '', modalidade: r.modalidade || loc.modalidade || '', jornada: r.jornada || '',
+      beneficios: r.beneficios || '', publicada: r.publicada || '', logoUrl: r.logoUrl || '', logo: logo,
+      aviso: avisos.join(' '),
+    });
+  }
+  // Outro site (Gupy, Indeed, site da empresa...): tenta aproveitar o título da página
+  const dados = { ok: true, linkedin: false, link: link, conferida: false };
+  try {
+    const resp = UrlFetchApp.fetch(link, { muteHttpExceptions: true, followRedirects: true, headers: CABECALHOS });
+    if (resp.getResponseCode() === 200) {
+      const html = resp.getContentText().slice(0, 300000);
+      const meta = function (nome) {
+        return decodificar_(pegar_(html, new RegExp('<meta[^>]+(?:property|name)="' + nome + '"[^>]+content="([^"]*)"', 'i')) ||
+          pegar_(html, new RegExp('<meta[^>]+content="([^"]*)"[^>]+(?:property|name)="' + nome + '"', 'i')));
+      };
+      let titulo = meta('og:title') || textoLimpo_(pegar_(html, /<title[^>]*>([\s\S]*?)<\/title>/i));
+      titulo = String(titulo || '').split(/\s+[|·–—]\s+/)[0].trim();
+      dados.titulo = titulo.slice(0, 140);
+      const site = meta('og:site_name');
+      if (site && !/gupy|indeed|catho|infojobs|linkedin|vagas\.com|glassdoor/i.test(site)) dados.empresa = site.slice(0, 80);
+      dados.beneficios = extrairBeneficios_(textoLimpo_(meta('og:description') + ' ' + html.slice(0, 200000)));
+    }
+  } catch (e) { /* sem problema: ela preenche na mão */ }
+  dados.aviso = 'Confira e complete os dados: vaga de fora do LinkedIn não é conferida automaticamente.';
+  return dados;
+}
+
+function adicionar_(dadosJson) {
+  let d;
+  try { d = JSON.parse(dadosJson || '{}'); } catch (e) { throw new Error('Dados inválidos'); }
+  const texto = function (v, max) { return String(v || '').replace(/\s+/g, ' ').trim().slice(0, max); };
+  const link = texto(d.link, 600);
+  if (!/^https?:\/\/\S+$/i.test(link)) throw new Error('O link da vaga precisa começar com https://');
+  const titulo = texto(d.titulo, 140);
+  if (!titulo) throw new Error('Falta o cargo da vaga.');
+  const idLi = idLinkedIn_(link);
+  const id = idLi || ('m' + Date.now());
+  const props = PropertiesService.getScriptProperties();
+  if (idLi && props.getProperty('p_' + idLi)) throw new Error('Essa vaga já está na lista para enviar.');
+  const modalidades = { presencial: 1, 'híbrida': 1, remota: 1 };
+  const v = {
+    id: id, manual: true, externa: !idLi, origem: 'manual',
+    titulo: titulo, empresaOriginal: texto(d.empresaOriginal || d.empresa, 120), empresa: texto(d.empresa, 120),
+    local: texto(d.local, 60),
+    modalidade: modalidades[d.modalidade] ? d.modalidade : '', jornada: texto(d.jornada, 40),
+    beneficios: texto(d.beneficios, 400),
+    link: idLi ? 'https://www.linkedin.com/jobs/view/' + idLi + '/' : link,
+    logoUrl: /^https:\/\/media\.licdn\.com\//.test(String(d.logoUrl || '')) ? d.logoUrl : '',
+    status: idLi ? (d.conferida ? 'ok' : 'nao_verificada') : 'ok',
+    verificadaEm: idLi && d.conferida ? Date.now() : 0,
+    dataEmail: Date.now(),
+  };
+  props.setProperty('p_' + id, JSON.stringify(v));
+  props.deleteProperty('v_' + id);
+  return montarResposta_({});
+}
+
+// ---------------------------------------------------------------------------
+// Resumo das vagas enviadas (uma chave por dia: est_AAAA-MM-DD)
+// ---------------------------------------------------------------------------
+function registrarEnvio_(p) {
+  p = p || {};
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(8000)) return;
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const agora = new Date();
+    const chave = 'est_' + Utilities.formatDate(agora, FUSO, 'yyyy-MM-dd');
+    let e;
+    try { e = JSON.parse(props.getProperty(chave) || '{}'); } catch (err) { e = {}; }
+    e.n = (e.n || 0) + 1;
+    const somar = function (campo, valor) {
+      valor = String(valor || '').trim().slice(0, 40) || 'Não informado';
+      e[campo] = e[campo] || {};
+      e[campo][valor] = (e[campo][valor] || 0) + 1;
+    };
+    somar('a', p.area);
+    somar('c', String(p.cidade || '').replace(/\/[A-Z]{2}$/, ''));
+    somar('m', p.modalidade);
+    e.i = e.i || [];
+    if (e.i.length < 60) {
+      e.i.push([Utilities.formatDate(agora, FUSO, 'HH:mm'), String(p.titulo || '').slice(0, 70),
+        String(p.empresa || '').slice(0, 40), String(p.cidade || '').slice(0, 30)]);
+    }
+    let json = JSON.stringify(e);
+    while (json.length > 8500 && e.i.length) { e.i.shift(); json = JSON.stringify(e); }
+    props.setProperty(chave, json);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Mantém 120 dias de números; a lista de vagas de cada dia só fica 7 dias (para caber no limite do Google). */
+function limparEstatisticas_(todas, props) {
+  const hoje = new Date();
+  const dia = function (n) { return Utilities.formatDate(new Date(hoje.getTime() - n * DIA_MS), FUSO, 'yyyy-MM-dd'); };
+  const limiteLista = dia(7), limiteTudo = dia(120);
+  Object.keys(todas).forEach(function (k) {
+    if (k.indexOf('est_') !== 0) return;
+    const d = k.slice(4);
+    if (d < limiteTudo) { props.deleteProperty(k); return; }
+    if (d < limiteLista && todas[k].indexOf('"i"') !== -1) {
+      try { const e = JSON.parse(todas[k]); delete e.i; props.setProperty(k, JSON.stringify(e)); } catch (err) { /* ignora */ }
+    }
+  });
+}
+
+function resumo_() {
+  const todas = PropertiesService.getScriptProperties().getProperties();
+  const dias = [];
+  Object.keys(todas).forEach(function (k) {
+    if (k.indexOf('est_') !== 0) return;
+    try {
+      const e = JSON.parse(todas[k]);
+      dias.push({ data: k.slice(4), n: e.n || 0, a: e.a || {}, c: e.c || {}, m: e.m || {}, i: e.i || [] });
+    } catch (err) { /* ignora */ }
+  });
+  dias.sort(function (a, b) { return a.data < b.data ? 1 : -1; });
+  return { ok: true, hoje: Utilities.formatDate(new Date(), FUSO, 'yyyy-MM-dd'), dias: dias.slice(0, 120) };
+}
+
+// ---------------------------------------------------------------------------
 // Pesquisa direta na busca pública de vagas do LinkedIn
 // ---------------------------------------------------------------------------
 function pesquisarLinkedIn_(todas, jaAchadas, paginas, prazo) {
@@ -492,7 +660,7 @@ function pesquisarLinkedIn_(todas, jaAchadas, paginas, prazo) {
       cartoes.forEach(function (k) {
         if (vagas[k.id] || jaAchadas[k.id] || todas['p_' + k.id] || todas['v_' + k.id]) return;
         const loc = analisarLocal_(k.local);
-        if (!loc.atendida) { foraDaRegiao++; return; } // cidade vizinha: nem guarda
+        if (!loc.atendida && !homeOfficeAceito_(loc)) { foraDaRegiao++; return; } // cidade vizinha: nem guarda
         vagas[k.id] = {
           id: k.id,
           titulo: arrumarTitulo_(k.titulo),
@@ -699,6 +867,10 @@ function aplicarVerificacao_(v, r) {
   if (r.status === 'nao_verificada' && v.status === 'ok') return;
   v.status = r.status;
   v.falha = r.falha || '';
+  if (v.manual) { // adicionada pela cliente: mantém o que ela preencheu, só atualiza se está aberta
+    if (r.status === 'ok' || r.status === 'encerrada') v.verificadaEm = Date.now();
+    return;
+  }
   if (r.status === 'ok' || r.status === 'encerrada') {
     v.origem = 'linkedin';
     v.verificadaEm = Date.now();
@@ -718,6 +890,13 @@ function aplicarVerificacao_(v, r) {
 function classificar_(v) {
   if (v.status === 'removida') return { descartar: true, motivo: 'Vaga removida do LinkedIn' };
   if (v.status === 'encerrada') return { descartar: true, motivo: 'Não aceita mais candidaturas' };
+  if (v.manual) {
+    // adicionada pela cliente: vale a escolha dela (sem filtro de cidade nem de data de publicação)
+    if (v.dataEmail && Date.now() - v.dataEmail > maxDias_() * DIA_MS) {
+      return { descartar: true, motivo: 'Ficou mais de ' + maxDias_() + ' dias na fila' };
+    }
+    return { descartar: false, aviso: v.status === 'ok' || v.externa ? '' : 'Não deu para conferir no LinkedIn agora. Abra o link antes de enviar.' };
+  }
   if (typeof v.dias === 'number' && v.dias > maxDias_()) {
     return { descartar: true, motivo: 'Publicada há ' + v.dias + ' dias' };
   }
@@ -731,6 +910,9 @@ function classificar_(v) {
     if (loc.atendida) {
       v.local = loc.texto;
       if (!v.modalidade && loc.modalidade) v.modalidade = loc.modalidade;
+    } else if (homeOfficeAceito_(loc, v.modalidade)) {
+      v.local = loc.texto;
+      v.modalidade = 'remota';
     } else if (v.origem === 'linkedin' || loc.pareceLocal) {
       return { descartar: true, motivo: 'Fora da região (' + loc.texto + ')' };
     }
@@ -754,7 +936,7 @@ function montarResposta_(extra) {
   // Vaga não conferida e sem cidade conhecida fica esperando a próxima busca (não aparece para a cliente)
   const todasDaFila = lerFila_(todas);
   // Vaga achada na pesquisa direta só aparece depois de conferida (aí já tem jornada e benefícios)
-  const fila = todasDaFila.filter(function (v) { return v.status === 'ok' || (!!v.local && v.origem !== 'busca'); });
+  const fila = todasDaFila.filter(function (v) { return v.manual || v.status === 'ok' || (!!v.local && v.origem !== 'busca'); });
   const aguardando = todasDaFila.length - fila.length;
   const logos = logosEmBase64_(fila);
   const pendentes = fila.map(function (v) {
@@ -762,7 +944,7 @@ function montarResposta_(extra) {
     return {
       id: v.id,
       titulo: v.titulo || '',
-      empresa: apelidos[chaveEmpresa_(original)] || original,
+      empresa: (v.manual && v.empresa) || apelidos[chaveEmpresa_(original)] || original,
       empresaOriginal: original,
       local: v.local || '',
       modalidade: v.modalidade || '',
@@ -770,7 +952,8 @@ function montarResposta_(extra) {
       beneficios: v.beneficios || '',
       publicada: v.publicada || '',
       link: v.link,
-      conferida: v.status === 'ok',
+      conferida: v.status === 'ok' && !v.externa,
+      manual: !!v.manual,
       aviso: v.aviso || '',
       logo: logos[v.id] || '',
     };
@@ -803,7 +986,8 @@ function lerFila_(todas) {
     try { fila.push(JSON.parse(todas[k])); } catch (e) { /* ignora registro corrompido */ }
   });
   fila.sort(function (a, b) {
-    return ((a.dataEmail || 0) - (b.dataEmail || 0)) || String(a.publicadaEm || '').localeCompare(String(b.publicadaEm || ''));
+    return ((b.manual ? 1 : 0) - (a.manual ? 1 : 0)) || // as adicionadas pela cliente vêm primeiro
+      ((a.dataEmail || 0) - (b.dataEmail || 0)) || String(a.publicadaEm || '').localeCompare(String(b.publicadaEm || ''));
   });
   return fila;
 }
@@ -844,10 +1028,11 @@ function logosEmBase64_(fila) {
 }
 
 function marcar_(id, tipo, p) {
-  if (!/^\d{6,12}$/.test(String(id || ''))) throw new Error('ID de vaga inválido');
+  if (!/^(\d{6,12}|m\d{10,14})$/.test(String(id || ''))) throw new Error('ID de vaga inválido');
   const props = PropertiesService.getScriptProperties();
   props.deleteProperty('p_' + id);
   props.setProperty('v_' + id, (tipo === 'enviada' ? 'e' : 'd') + '|' + Date.now());
+  if (tipo === 'enviada') registrarEnvio_(p);
   // Lembra o nome curto da empresa que ela digitou (ex.: "Oxi-Maq")
   if (tipo === 'enviada' && p.empresaOriginal && p.empresa) {
     const original = String(p.empresaOriginal).slice(0, 120);
@@ -859,6 +1044,7 @@ function marcar_(id, tipo, p) {
 
 function limparHistorico_(todas, props) {
   const limite = Date.now() - CONFIG.GUARDAR_HISTORICO_DIAS * DIA_MS;
+  limparEstatisticas_(todas, props);
   Object.keys(todas).forEach(function (k) {
     if (k.indexOf('v_') !== 0) return;
     const t = Number(String(todas[k]).split('|')[1] || 0);
@@ -1009,7 +1195,14 @@ function analisarLocal_(bruto) {
   const atendida = !!cidade && ufOk;
   const texto = atendida ? cidade + '/' + CONFIG.UF : (partes.length > 1 ? partes[0] + '/' + (uf || partes[1]) : s);
   const pareceLocal = partes.length > 1 || /brasil|brazil|remot|hibrid|presencial/.test(norm);
-  return { texto: texto, atendida: atendida, pareceLocal: pareceLocal, modalidade: modalidade };
+  return { texto: texto, atendida: atendida, pareceLocal: pareceLocal, modalidade: modalidade, uf: uf };
+}
+
+/** Home office de outra cidade: vale para o grupo se for do mesmo estado ou do Brasil todo. */
+function homeOfficeAceito_(loc, modalidade) {
+  if (!CONFIG.HOME_OFFICE_DE_FORA) return false;
+  if ((modalidade || loc.modalidade) !== 'remota') return false;
+  return !loc.uf || loc.uf === CONFIG.UF;
 }
 
 /** Corta a lista até caber no limite de tamanho de uma propriedade. */

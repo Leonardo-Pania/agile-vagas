@@ -81,6 +81,11 @@ const Utilities = {
   sleep: () => { pausas++; },
   base64Encode: (b) => Buffer.from(b).toString('base64'),
   getUuid: () => '1234abcd-5678-90ef-aaaa-bbbbccccdddd',
+  formatDate: (d, fuso, fmt) => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: fuso, year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d).map((x) => [x.type, x.value]));
+    return fmt.replace('yyyy', p.year).replace('MM', p.month).replace('dd', p.day).replace('HH', p.hour).replace('mm', p.minute);
+  },
 };
 const cacheStore = {};
 const CacheService = { getScriptCache: () => ({
@@ -111,7 +116,7 @@ const ctx = vm.createContext({
   console: { log: (...a) => ctx.__logs.push(a.join(' ')), error: (...a) => console.error(...a) },
   __logs: [],
 });
-vm.runInContext(fs.readFileSync(path.join(__dirname, 'Code.gs'), 'utf8'), ctx, { filename: 'Code.gs' });
+vm.runInContext(fs.readFileSync(fs.existsSync(path.join(__dirname, 'Code.gs')) ? path.join(__dirname, 'Code.gs') : path.join(__dirname, '..', 'Code.gs'), 'utf8'), ctx, { filename: 'Code.gs' });
 const api = (params) => JSON.parse(ctx.doGet({ parameter: params }).texto);
 
 // ---------- 1. funções de texto ----------
@@ -385,6 +390,70 @@ ok(gatilhos.length === 2 && gatilhos[0].hora === 11 && gatilhos[0].minuto === 30
 ok(ag === 'todo dia por volta de 11:30 e 17:00' && api({ acao: 'listar', chave }).agenda === '11:30 e 17:00', 'o app fica sabendo dos horários');
 const aj12 = api({ acao: 'salvarAjustes', chave, dados: JSON.stringify({ cidades: ['Matão', 'Araraquara', 'São Carlos', 'Taquaritinga'], maxDias: 15, msgRodape: 'Compartilhe! 🤝\n\nAGILE' }) });
 ok(aj12.ok && aj12.ajustes.msgRodape === 'Compartilhe! 🤝\n\nAGILE', 'rodapé da mensagem é salvo');
+
+// ---------- 13. vaga adicionada pela cliente ----------
+console.log('\nAdicionar vaga na mão');
+ctx.zerarFilaEHistorico();
+paginas['4600000001'] = { codigo: 200, html: pagina({ id: 61, titulo: 'AUXILIAR ADMINISTRATIVO', empresa: 'Aticca', local: 'Ribeirão Preto, SP', publicada: 'Há 2 dias', desc: 'Benefícios: Vale Transporte; PLR.' }) };
+const l1 = api({ acao: 'lerLink', chave, link: 'https://br.linkedin.com/jobs/view/auxiliar-administrativo-at-aticca-4600000001?trk=x' });
+ok(l1.ok && l1.linkedin && l1.conferida && l1.titulo === 'Auxiliar Administrativo' && l1.empresa === 'Aticca' && l1.local === 'Ribeirão Preto/SP',
+  'link do LinkedIn (com nome no endereço) preenche tudo: ' + [l1.titulo, l1.empresa, l1.local].join(' | '));
+ok(/fora das cidades/.test(l1.aviso) && l1.beneficios === 'Vale-transporte e PLR' && /^data:image/.test(l1.logo), 'avisa cidade de fora, traz benefícios e logo');
+paginas['4600000002'] = { codigo: 200, html: pagina({ id: 62, titulo: 'Vendedor', empresa: 'X', local: 'Matão, SP', publicada: 'Há 1 dia', fechada: true }) };
+const l2 = api({ acao: 'lerLink', chave, link: 'https://www.linkedin.com/jobs/search/?currentJobId=4600000002&geoId=1' });
+ok(!l2.ok && /não aceita mais/.test(l2.erro), 'vaga encerrada não entra: ' + l2.erro);
+store['v_4600000003'] = 'e|' + Date.UTC(2026, 10, 20, 15);
+paginas['4600000003'] = { codigo: 200, html: pagina({ id: 63, titulo: 'Operador', empresa: 'Y', local: 'Matão, SP', publicada: 'Há 1 dia' }) };
+const l3 = api({ acao: 'lerLink', chave, link: 'https://www.linkedin.com/jobs/view/4600000003/' });
+ok(l3.ok && /já foi enviada no dia 20\/11/.test(l3.aviso), 'avisa se já foi enviada: ' + l3.aviso);
+paginas['vaga-gupy'] = { codigo: 200, html: '<html><head><meta property="og:title" content="Assistente de RH | Gupy"><meta property="og:site_name" content="Usina Santa Fé"><title>x</title></head><body>Oferecemos vale-refeição e plano de saúde.</body></html>' };
+const l4 = api({ acao: 'lerLink', chave, link: 'https://usina.gupy.io/jobs/vaga-gupy' });
+ok(l4.ok && !l4.linkedin && l4.titulo === 'Assistente de RH' && l4.empresa === 'Usina Santa Fé' && l4.beneficios === 'Vale-refeição e assistência médica',
+  'link de outro site aproveita título, empresa e benefícios: ' + [l4.titulo, l4.empresa, l4.beneficios].join(' | '));
+ok(!api({ acao: 'lerLink', chave, link: 'abc' }).ok, 'texto que não é link é recusado');
+
+const a1 = api({ acao: 'adicionar', chave, dados: JSON.stringify({ link: 'https://usina.gupy.io/jobs/vaga-gupy', titulo: 'Assistente de RH', empresa: 'Usina Santa Fé', local: 'Ribeirão Preto/SP', modalidade: 'remota', jornada: 'Tempo integral', beneficios: 'Vale-refeição' }) });
+const m1 = a1.pendentes && a1.pendentes[0];
+ok(a1.ok && m1 && /^m\d+$/.test(m1.id) && m1.manual && !m1.conferida && m1.local === 'Ribeirão Preto/SP' && m1.modalidade === 'remota', 'vaga de outro site entra no topo da lista: ' + (m1 && m1.id));
+const a2 = api({ acao: 'adicionar', chave, dados: JSON.stringify({ link: 'https://www.linkedin.com/jobs/view/4600000001/', titulo: 'Aux. Administrativo (editado)', empresa: 'Aticca', local: 'Ribeirão Preto/SP', conferida: true }) });
+ok(a2.ok && a2.pendentes.length === 2 && a2.pendentes.some((v) => v.id === '4600000001' && v.conferida && v.manual), 'vaga do LinkedIn adicionada fica conferida');
+ok(!api({ acao: 'adicionar', chave, dados: JSON.stringify({ link: 'https://www.linkedin.com/jobs/view/4600000001/', titulo: 'x' }) }).ok, 'não deixa adicionar a mesma vaga duas vezes');
+ok(!api({ acao: 'adicionar', chave, dados: JSON.stringify({ link: 'https://x.com/vaga', titulo: '' }) }).ok, 'sem cargo não adiciona');
+// a busca não descarta (cidade de fora) nem tenta conferir vaga de outro site; e não apaga o que ela editou
+threads = [];
+const antes13 = acessos.length;
+store['p_4600000001'] = JSON.stringify(Object.assign(JSON.parse(store['p_4600000001']), { verificadaEm: 1 }));
+const b13 = api({ acao: 'buscar', chave });
+const p13 = Object.fromEntries(b13.pendentes.map((v) => [v.id, v]));
+ok(p13[m1.id] && p13['4600000001'], 'busca mantém as vagas adicionadas (mesmo de fora da região)');
+ok(p13['4600000001'].titulo === 'Aux. Administrativo (editado)', 'reconferir no LinkedIn não troca o que ela preencheu');
+ok(!acessos.slice(antes13).some((u) => /jobPosting\/m\d/.test(u)), 'vaga de outro site não é consultada no LinkedIn');
+ok(b13.pendentes[0].manual && b13.pendentes[1].manual, 'adicionadas continuam no topo');
+
+// ---------- 14. resumo das enviadas ----------
+console.log('\nResumo das enviadas');
+Object.keys(store).filter((k) => k.indexOf('est_') === 0).forEach((k) => delete store[k]);
+api({ acao: 'enviada', chave, id: m1.id, empresaOriginal: 'Usina Santa Fé', empresa: 'Usina Santa Fé', titulo: 'Assistente de RH', cidade: 'Ribeirão Preto/SP', area: 'Administrativo', modalidade: 'Home office' });
+api({ acao: 'enviada', chave, id: '4600000001', empresaOriginal: 'Aticca', empresa: 'Aticca', titulo: 'Aux. Administrativo', cidade: 'Araraquara/SP', area: 'Administrativo', modalidade: 'Presencial' });
+const r14 = api({ acao: 'resumo', chave });
+const hoje14 = r14.dias.find((d) => d.data === r14.hoje);
+ok(r14.ok && hoje14 && hoje14.n === 2 && hoje14.a.Administrativo === 2 && hoje14.c['Ribeirão Preto'] === 1 && hoje14.m['Home office'] === 1 && hoje14.i.length === 2,
+  'conta enviadas do dia por área, cidade e modalidade: ' + JSON.stringify(hoje14 && { n: hoje14.n, c: hoje14.c }));
+ok(store['v_' + m1.id] && store['v_' + m1.id].charAt(0) === 'e', 'id de vaga adicionada (m...) é aceito ao enviar');
+store['est_2026-01-01'] = JSON.stringify({ n: 3, a: {}, c: {}, m: {}, i: [['10:00', 'x', 'y', 'z']] });
+const dVelha = new Date(Date.now() - 10 * 86400000).toISOString().slice(0, 10);
+store['est_' + dVelha] = JSON.stringify({ n: 1, a: { Vendas: 1 }, c: {}, m: {}, i: [['10:00', 'x', 'y', 'z']] });
+ctx.limparHistorico_(Object.assign({}, store), props);
+ok(!store['est_2026-01-01'] && store['est_' + dVelha] && !JSON.parse(store['est_' + dVelha]).i, 'guarda os números por 120 dias e a lista de vagas só 7 dias');
+
+// ---------- 15. home office de fora ----------
+console.log('\nHome office');
+const C = (localBruto, modalidade) => { const v = { status: 'ok', origem: 'linkedin', localBruto, modalidade }; const c = ctx.classificar_(v); return [c.descartar, v.local, v.modalidade]; };
+ok(JSON.stringify(C('São Paulo, São Paulo, Brasil (Remoto)')) === '[false,"São Paulo/SP","remota"]', 'home office do estado de SP fica: ' + JSON.stringify(C('São Paulo, São Paulo, Brasil (Remoto)')));
+ok(JSON.stringify(C('Brasil', 'remota')) === '[false,"Brasil","remota"]', 'home office do Brasil todo fica (modalidade pela descrição)');
+ok(C('Belo Horizonte, MG (Remoto)')[0] === true, 'home office restrito a outro estado sai');
+ok(C('São Paulo, SP (Híbrido)')[0] === true && C('Campinas, SP', 'presencial')[0] === true, 'presencial/híbrido de outra cidade continua saindo');
+ok(JSON.stringify(C('Araraquara, SP (Remoto)')) === '[false,"Araraquara/SP","remota"]', 'home office das cidades do grupo continua igual');
 
 console.log(falhas ? `\n${falhas} FALHA(S)` : '\nTudo certo.');
 process.exit(falhas ? 1 : 0);
